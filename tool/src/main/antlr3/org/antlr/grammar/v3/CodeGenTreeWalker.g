@@ -138,25 +138,28 @@ protected final ST getRuleElementST( String name,
                                           GrammarAST elementAST,
                                           GrammarAST ast_suffix,
                                           String label ) {
-    String suffix = getSTSuffix( elementAST, ast_suffix, label );
-    name += suffix;
-    // if we're building trees and there is no label, gen a label
-    // unless we're in a synpred rule.
-    Rule r = grammar.getRule( currentRuleName );
-    if ( ( grammar.buildAST() || suffix.length() > 0 ) && label == null &&
-         ( r == null || !r.isSynPred ) ) {
-        // we will need a label to do the AST or tracking, make one
-        label = generator.createUniqueLabel( ruleTargetName );
-        CommonToken labelTok = new CommonToken( ANTLRParser.ID, label );
-        grammar.defineRuleRefLabel( currentRuleName, labelTok, elementAST );
-    }
+	Rule r = grammar.getRule( currentRuleName );
+	String suffix = getSTSuffix(elementAST, ast_suffix, label);
+	if ( !r.isSynPred ) {
+		name += suffix;
+	}
+	// if we're building trees and there is no label, gen a label
+	// unless we're in a synpred rule.
+	if ( ( grammar.buildAST() || suffix.length() > 0 ) && label == null &&
+		 ( r == null || !r.isSynPred ) ) {
+		// we will need a label to do the AST or tracking, make one
+		label = generator.createUniqueLabel( ruleTargetName );
+		CommonToken labelTok = new CommonToken( ANTLRParser.ID, label );
+		grammar.defineRuleRefLabel( currentRuleName, labelTok, elementAST );
+	}
 
-    ST elementST = templates.getInstanceOf( name );
-    if ( label != null ) {
-        elementST.add( "label", label );
-    }
+	ST elementST = templates.getInstanceOf( name );
+	if ( label != null ) {
+		elementST.add( "label", label );
+	}
 
-    return elementST;
+
+	return elementST;
 }
 
 protected final ST getTokenElementST( String name,
@@ -456,7 +459,7 @@ rule returns [ST code=null]
 					}
 				}
 				$code = templates.getInstanceOf(stName);
-				if ( $code.getName().equals("rule") )
+				if ( $code.getName().equals("/rule") )
 				{
 					$code.add("emptyRule", grammar.isEmptyRule(block2));
 				}
@@ -1417,7 +1420,7 @@ rewrite_atom[boolean isRoot] returns [ST code=null]
 										  grammar,
 										  ((GrammarAST)($r)).getToken(),
 										  ruleRefName);
-				$code = new ST(); // blank; no code gen
+				$code = new ST(""); // blank; no code gen
 			}
 			else
 			{
@@ -1468,7 +1471,7 @@ rewrite_atom[boolean isRoot] returns [ST code=null]
 										  grammar,
 										  ((GrammarAST)($start)).getToken(),
 										  tokenName);
-				$code = new ST(); // blank; no code gen
+				$code = new ST(""); // blank; no code gen
 			}
 		}
 
@@ -1498,7 +1501,7 @@ rewrite_atom[boolean isRoot] returns [ST code=null]
 										  grammar,
 										  ((GrammarAST)($LABEL)).getToken(),
 										  labelName);
-				$code = new ST();
+				$code = new ST("");
 			}
 			else
 			{

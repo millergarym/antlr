@@ -184,6 +184,7 @@ public class CodeGenerator {
 	public void loadTemplates(String language) {
 		String langDir = classpathTemplateRootDirectoryName+"/"+language;
 		STGroup coreTemplates = new STGroupFile(langDir+"/"+language+".stg");
+
 		baseTemplates = coreTemplates;
 		if ( coreTemplates ==null ) {
 			ErrorManager.error(ErrorManager.MSG_MISSING_CODE_GEN_TEMPLATES,
@@ -213,6 +214,9 @@ public class CodeGenerator {
 				STGroup astDbgTemplates = new STGroupFile(langDir+"/ASTDbg.stg");
 				astDbgTemplates.importTemplates(astParserTemplates);
 				templates = astDbgTemplates;
+				dbgTemplates.iterateAcrossValues = true; // ST v3 compatibility with Maps
+				astDbgTemplates.iterateAcrossValues = true;
+				astParserTemplates.iterateAcrossValues = true;
 			}
 			else {
 				STGroup astTemplates = new STGroupFile(langDir+"/AST.stg");
@@ -227,6 +231,8 @@ public class CodeGenerator {
 					astParserTemplates.importTemplates(astTemplates);
 				}
 				templates = astParserTemplates;
+				astTemplates.iterateAcrossValues = true; // ST v3 compatibility with Maps
+				astParserTemplates.iterateAcrossValues = true;
 			}
 		}
 		else if ( outputOption!=null && outputOption.equals("template") ) {
@@ -237,21 +243,25 @@ public class CodeGenerator {
 				STGroup stTemplates = new STGroupFile(langDir+"/ST.stg");
 				stTemplates.importTemplates(dbgTemplates);
 				templates = stTemplates;
+				dbgTemplates.iterateAcrossValues = true;
 			}
 			else {
 				STGroup stTemplates = new STGroupFile(langDir+"/ST.stg");
 				stTemplates.importTemplates(coreTemplates);
 				templates = stTemplates;
 			}
+			templates.iterateAcrossValues = true; // ST v3 compatibility with Maps
 		}
 		else if ( debug && grammar.type!=Grammar.LEXER ) {
 			STGroup dbgTemplates = new STGroupFile(langDir+"/Dbg.stg");
 			dbgTemplates.importTemplates(coreTemplates);
 			templates = dbgTemplates;
 			baseTemplates = templates;
+			baseTemplates.iterateAcrossValues = true; // ST v3 compatibility with Maps
 		}
 		else {
 			templates = coreTemplates;
+			coreTemplates.iterateAcrossValues = true; // ST v3 compatibility with Maps
 		}
 	}
 
@@ -318,7 +328,7 @@ public class CodeGenerator {
 		// The only two possible output files are available at this point.
 		// Verify action scopes are ok for target and dump actions into output
 		// Templates can say <actions.parser.header> for example.
-		Map actions = grammar.getActions();
+		Map<String, Map<String, Object>> actions = grammar.getActions();
 		verifyActionScopesOkForTarget(actions);
 		// translate $x::y references
 		translateActionAttributeReferences(actions);
@@ -462,9 +472,7 @@ public class CodeGenerator {
 			//System.out.println(outputFileST.getDOTForDependencyGraph(false));
 		}
 		catch (IOException ioe) {
-			ErrorManager.error(ErrorManager.MSG_CANNOT_WRITE_FILE,
-							   getVocabFileName(),
-							   ioe);
+			ErrorManager.error(ErrorManager.MSG_CANNOT_WRITE_FILE, ioe);
 		}
 		/*
 		System.out.println("num obj.prop refs: "+ ASTExpr.totalObjPropRefs);

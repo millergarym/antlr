@@ -1,5 +1,5 @@
-ANTLR 3.3 Release
-November 29, 2010
+ANTLR 3.4 Release
+July 18, 2011
 
 Terence Parr, parrt at cs usfca edu
 ANTLR project lead and supreme dictator for life
@@ -7,14 +7,73 @@ University of San Francisco
 
 CHANGES
 
+July 18, 2011 -- release 3.4
+
+* Added tree method insertChild(int i, Object t).
+
+July 14, 2011
+
+* Added BaesTree.freshenParentAndChildIndexesDeeply() to recursively
+  walk tree and set ptrs.
+
+July 6, 2011
+
+* reset() for token stream didn't skip initial off-channel tokens.
+
+July 5, 2011
+
+* Sam fixes rare infinite loop upon error in nextToken().
+* rewrites weren't pulled from syntactic predicates.
+
+June 29, 2011
+
+* Sam noticed CommonToken.getText() cached substring pulled from input, which
+  defeated purpose of pointing into input char array.  Altered to not cache.
+  Should reduce memory footprint.
+
+June 24, 2011
+
+* empty alts with actions didn't have EPSILON dummy alt node.
+
+June 19, 2011
+
+* Udo noticed that Parser.getMissingSymbol() didn't set invented token's input
+
+June 8, 2011
+
+* Added inContext(String context) back into TreeParser.
+
+April 21, 2011
+
+* Updated for ST v4.0.2 (setting iterateAcrossValues = true as instance var)
+* Needed throws condition for delegatedRules.
+
+April 20, 2011 (Sam Harwell)
+
+* Implement the 'throwsSpec' feature of parser rules for the Java target
+* Improve algorithm for SemanticContext Boolean predicate reduction
+
 April 13, 2011
 
-* Integrated STv4 upgrade from antlr3-main.  Tool/runtime should no longer
-  need ANTLR v2! :)
+* Unmangled region names in STViz hiearchy tree display.
+* Removed conversion timeout thing again
 
-March 7, 2011
+April 11, 2011
 
-* Changed output=template code to use ST v4 not ST v3.2.1
+* Added option -Xconversiontimeout back in.  Turns out we hit NFA conversion
+  time landmine occasionally with huge grammars; fails over to backtracking
+  (if turned on) if it can't make DFA.
+
+March 29 - April 10, 2011
+
+* Uses ST v4 now!!!  Massive change.  Only updated Java target so far.
+  Ripped out ST v3 usage to remove indirect dependency on ANTLR v2.
+
+March 28, 2011
+
+* Sam Harwell ported all v2 grammars to v3!
+
+March 3, 2011
 
 * left-recursion pattern off until all targets catch up
 
@@ -37,7 +96,8 @@ March 3, 2011
         CommonTree tree;
         public Object getTree() { return tree; }
     };
-  Removed these special classes if it's just AST; keep if they have defined "returns" values
+  Removed these special classes if it's just AST; keep if they have defined "returns"
+  values
 
 February 26, 2011
 

@@ -41,7 +41,7 @@ import java.util.*;
 public class Tool {
 
     public final Properties antlrSettings = new Properties();
-    public String VERSION = "!Unknown version!";
+    public String VERSION = "3.4";
     //public static final String VERSION = "${project.version}";
     public static final String UNINITIALIZED_DIR = "<unset-dir>";
     private List<String> grammarFileNames = new ArrayList<String>();
@@ -118,8 +118,7 @@ public class Tool {
 
                 // Set any variables that we need to populate from the resources
                 //
-                VERSION = antlrSettings.getProperty("antlr.version");
-
+//                VERSION = antlrSettings.getProperty("antlr.version");
             } catch (Exception e) {
                 // Do nothing, just leave the defaults in place
             }
@@ -131,8 +130,6 @@ public class Tool {
     }
 
     public Tool(String[] args) {
-		STGroup.iterateAcrossValues = true; // ST v3 compatibility with Maps
-
         loadResources();
 
         // Set all the options and pick up all the named grammar files
@@ -455,7 +452,7 @@ public class Tool {
                     System.out.println("output: "+outputFiles);
                     System.out.println("dependents: "+dependents);
                      */
-                    System.out.println(dep.getDependencies());
+                    System.out.println(dep.getDependencies().render());
                     continue;
                 }
 
@@ -463,7 +460,7 @@ public class Tool {
                 // we now have all grammars read in as ASTs
                 // (i.e., root and all delegates)
 				rootGrammar.composite.assignTokenTypes();
-				rootGrammar.composite.translateLeftRecursiveRules();
+				//rootGrammar.composite.translateLeftRecursiveRules();
 				rootGrammar.addRulesForSyntacticPredicates();
 				rootGrammar.composite.defineGrammarSymbols();
                 rootGrammar.composite.createNFAs();
@@ -538,8 +535,7 @@ public class Tool {
             }
             catch (IOException e) {
                 if (exceptionWhenWritingLexerFile) {
-                    ErrorManager.error(ErrorManager.MSG_CANNOT_WRITE_FILE,
-                                       lexerGrammarFileName, e);
+                    ErrorManager.error(ErrorManager.MSG_CANNOT_WRITE_FILE, e);
                 }
                 else {
                     ErrorManager.error(ErrorManager.MSG_CANNOT_OPEN_FILE,
@@ -641,7 +637,7 @@ public class Tool {
      *  After all NFA, comes DFA conversion for root grammar then code gen for
      *  root grammar.  DFA and code gen for delegates comes next.
      */
-    public void generateRecognizer(Grammar grammar) {
+    protected void generateRecognizer(Grammar grammar) {
         String language = (String) grammar.getOption("language");
         if (language != null) {
             CodeGenerator generator = new CodeGenerator(this, grammar, language);
@@ -754,7 +750,8 @@ public class Tool {
         System.err.println("  -Xdfa                   print DFA as text ");
         System.err.println("  -Xnoprune               test lookahead against EBNF block exit branches");
         System.err.println("  -Xnocollapse            collapse incident edges into DFA states");
-        System.err.println("  -Xdbgconversion         dump lots of info during NFA conversion");
+		System.err.println("  -Xdbgconversion         dump lots of info during NFA conversion");
+		System.err.println("  -Xconversiontimeout     use to restrict NFA conversion exponentiality");
         System.err.println("  -Xmultithreaded         run the analysis in 2 threads");
         System.err.println("  -Xnomergestopstates     do not merge stop states");
         System.err.println("  -Xdfaverbose            generate DFA states in DOT with NFA configs");

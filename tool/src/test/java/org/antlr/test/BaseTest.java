@@ -43,6 +43,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
+import javax.tools.*;
 import java.io.*;
 import java.util.*;
 
@@ -83,12 +84,14 @@ public abstract class BaseTest {
 						  "antlr-"+getClass().getName()+"-"+
 						  System.currentTimeMillis()).getAbsolutePath();
         ErrorManager.resetErrorState();
+        STGroup.defaultGroup = new STGroup();
     }
 
     @After
     public void tearDown() throws Exception {
         // remove tmpdir if no error.
-    	if ( !lastTestFailed ) eraseTempDir();
+        if ( !lastTestFailed ) eraseTempDir();
+
     }
 
     protected Tool newTool(String[] args) {
@@ -104,49 +107,41 @@ public abstract class BaseTest {
 	}
 
 	protected boolean compile(String fileName) {
-		String compiler = "javac";
 		String classpathOption = "-classpath";
 
-		if (jikes!=null) {
-			compiler = jikes;
-			classpathOption = "-bootclasspath";
-		}
-
-		String inputFile = tmpdir + File.separator + fileName;
 		String[] args = new String[] {
-					compiler, "-d", tmpdir,
+					"javac", "-d", tmpdir,
 					classpathOption, tmpdir+pathSep+CLASSPATH,
-					inputFile
+					tmpdir+"/"+fileName
 		};
-		String cmdLine = compiler+" -d "+tmpdir+" "+classpathOption+" "+tmpdir+pathSep+CLASSPATH+" "+fileName;
+		String cmdLine = "javac" +" -d "+tmpdir+" "+classpathOption+" "+tmpdir+pathSep+CLASSPATH+" "+fileName;
 		//System.out.println("compile: "+cmdLine);
-		File outputDir = new File(tmpdir);
+
+
+		File f = new File(tmpdir, fileName);
+		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+
+		StandardJavaFileManager fileManager =
+			compiler.getStandardFileManager(null, null, null);
+
+		Iterable<? extends JavaFileObject> compilationUnits =
+			fileManager.getJavaFileObjectsFromFiles(Arrays.asList(f));
+
+		Iterable<String> compileOptions =
+			Arrays.asList(new String[]{"-d", tmpdir, "-cp", tmpdir+pathSep+CLASSPATH} );
+
+		JavaCompiler.CompilationTask task =
+			compiler.getTask(null, fileManager, null, compileOptions, null,
+							 compilationUnits);
+		boolean ok = task.call();
+
 		try {
-			Process process =
-				Runtime.getRuntime().exec(args, null, outputDir);
-			StreamVacuum stdout = new StreamVacuum(process.getInputStream(), inputFile);
-			StreamVacuum stderr = new StreamVacuum(process.getErrorStream(), inputFile);
-			stdout.start();
-			stderr.start();
-			process.waitFor();
-            stdout.join();
-            stderr.join();
-			if ( stdout.toString().length()>0 ) {
-				System.err.println("compile stdout from: "+cmdLine);
-				System.err.println(stdout);
-			}
-			if ( stderr.toString().length()>0 ) {
-				System.err.println("compile stderr from: "+cmdLine);
-				System.err.println(stderr);
-			}
-			int ret = process.exitValue();
-			return ret==0;
+			fileManager.close();
 		}
-		catch (Exception e) {
-			System.err.println("can't exec compilation");
-			e.printStackTrace(System.err);
-			return false;
+		catch (IOException ioe) {
+			ioe.printStackTrace(System.err);
 		}
+		return ok;
 	}
 
 	/** Return true if all is ok, no errors */
@@ -745,7 +740,8 @@ public abstract class BaseTest {
 	{
 		ST outputFileST = new ST(
 			"import org.antlr.runtime.*;\n" +
-			"import org.stringtemplate.v4.*;\n" +
+			"import org.antlr.stringtemplate.*;\n" +
+			"import org.antlr.stringtemplate.language.*;\n" +
 			"import org.antlr.runtime.debug.*;\n" +
 			"import java.io.*;\n" +
 			"\n" +
@@ -753,6 +749,10 @@ public abstract class BaseTest {
 			"    public void terminate() { ; }\n" +
 			"}\n"+
 			"public class Test {\n" +
+			"    static String templates = \"group T; foo(x,y) ::= \\\"\\<x> \\<y>\\\"\";\n" +
+			"    static StringTemplateGroup group ="+
+			"    		new StringTemplateGroup(new StringReader(templates)," +
+			"					AngleBracketTemplateLexer.class);"+
 			"    public static void main(String[] args) throws Exception {\n" +
 			"        CharStream input = new ANTLRFileStream(args[0]);\n" +
 			"        <lexerName> lex = new <lexerName>(input);\n" +
@@ -761,7 +761,7 @@ public abstract class BaseTest {
 			"		 parser.setTemplateLib(group);\n"+
 			"        <parserName>.<parserStartRuleName>_return r = parser.<parserStartRuleName>();\n" +
 			"        if ( r.st!=null )\n" +
-			"            System.out.print(r.st.render());\n" +
+			"            System.out.print(r.st.toString());\n" +
 			"	 	 else\n" +
 			"            System.out.print(\"\");\n" +
 			"    }\n" +

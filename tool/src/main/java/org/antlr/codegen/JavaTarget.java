@@ -28,17 +28,33 @@
 package org.antlr.codegen;
 
 import org.antlr.Tool;
-import org.stringtemplate.v4.ST;
 import org.antlr.tool.Grammar;
+import org.antlr.tool.Rule;
+import org.stringtemplate.v4.ST;
+
+import java.util.Set;
 
 public class JavaTarget extends Target {
 	protected ST chooseWhereCyclicDFAsGo(Tool tool,
-													 CodeGenerator generator,
-													 Grammar grammar,
-													 ST recognizerST,
-													 ST cyclicDFAST)
+										 CodeGenerator generator,
+										 Grammar grammar,
+										 ST recognizerST,
+										 ST cyclicDFAST)
 	{
 		return recognizerST;
 	}
-}
 
+	@Override
+	protected void performGrammarAnalysis(CodeGenerator generator, Grammar grammar) {
+		super.performGrammarAnalysis(generator, grammar);
+		for (Rule rule : grammar.getRules()) {
+			rule.throwsSpec.add("RecognitionException");
+		}
+		Set<Rule> delegatedRules = grammar.getDelegatedRules();
+		if ( delegatedRules!=null ) {
+			for (Rule rule : delegatedRules) {
+				rule.throwsSpec.add("RecognitionException");
+			}
+		}
+	}
+}
