@@ -36,7 +36,7 @@
 	if (self) {
 		[self setDebugListener:debugger];
 		[self setInput:theStream];
-		[[self getInput] LT:1];	// force reading first on-channel token
+		[self.input LT:1];	// force reading first on-channel token
 		initialStreamState = YES;
 	}
 	return self;
@@ -45,7 +45,7 @@
 - (void) dealloc
 {
     [self setDebugListener:nil];
-    [self setInput:nil];
+    self.input = nil;
     [super dealloc];
 }
 
@@ -64,7 +64,7 @@
     }
 }
 
-- (id<ANTLRTokenStream>) getInput
+- (id<ANTLRTokenStream>) input
 {
     return input; 
 }
@@ -72,15 +72,15 @@
 - (void) setInput: (id<ANTLRTokenStream>) aTokenStream
 {
     if (input != aTokenStream) {
-        [aTokenStream retain];
-        [input release];
+        if ( input ) [input release];
         input = aTokenStream;
+        [input retain];
     }
 }
 
 - (void) consumeInitialHiddenTokens
 {
-	int firstIdx = [input getIndex];
+	int firstIdx = input.index;
 	for (int i = 0; i<firstIdx; i++)
 		[debugListener consumeHiddenToken:[input getToken:i]];
 	initialStreamState = NO;
@@ -93,17 +93,17 @@
 // forwarded to the actual token stream
 - (void) forwardInvocation:(NSInvocation *)anInvocation
 {
-	[anInvocation invokeWithTarget:[self getInput]];
+	[anInvocation invokeWithTarget:self.input];
 }
 
 - (void) consume
 {
 	if ( initialStreamState )
 		[self consumeInitialHiddenTokens];
-	int a = [input getIndex];
+	int a = input.index;
 	id<ANTLRToken> token = [input LT:1];
 	[input consume];
-	int b = [input getIndex];
+	int b = input.index;
 	[debugListener consumeToken:token];
 	if (b > a+1) // must have consumed hidden tokens
 		for (int i = a+1; i < b; i++)
@@ -152,7 +152,7 @@
 
 - (NSInteger) getIndex
 {
-    return [input getIndex];
+    return input.index;
 }
 
 - (void) release:(NSInteger) marker
@@ -181,6 +181,11 @@
     return [[input getTokenSource] getSourceName];
 }
 
+- (NSString *) description
+{
+    return [input toString];
+}
+
 - (NSString *) toString
 {
     return [input toString];
@@ -193,7 +198,7 @@
 
 - (NSString *) toStringFromToken:(id<ANTLRToken>)startToken ToToken:(id<ANTLRToken>)stopToken
 {
-    return [input toStringFromStart:[startToken getStartIndex] ToEnd:[stopToken getStopIndex]];
+    return [input toStringFromStart:[startToken getStart] ToEnd:[stopToken getStopToken]];
 }
 
 @end

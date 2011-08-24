@@ -38,6 +38,7 @@
 @implementation ANTLRLookaheadStream
 
 @synthesize eof;
+@synthesize index;
 @synthesize eofElementIndex;
 @synthesize lastMarker;
 @synthesize markDepth;
@@ -45,19 +46,21 @@
 
 -(id) init
 {
-	if ((self = [super init]) != nil) {
-        eof = [ANTLRCommonToken eofToken];
+	self = [super init];
+	if ( self != nil ) {
+        eof = [[ANTLRCommonToken eofToken] retain];
 		eofElementIndex = UNITIALIZED_EOF_ELEMENT_INDEX;
 		markDepth = 0;
-        currentElementIndex = 0;
+        index = 0;
 	}
 	return self;
 }
 
--(id) initWithEOF:(id) obj
+-(id) initWithEOF:(id)obj
 {
 	if ((self = [super init]) != nil) {
 		self.eof = obj;
+        if ( self.eof ) [self.eof retain];
 	}
 	return self;
 }
@@ -65,7 +68,7 @@
 - (void) reset
 {
 	[super reset];
-    currentElementIndex = 0;
+    index = 0;
     p = 0;
     prevElement = nil;
 	eofElementIndex = UNITIALIZED_EOF_ELEMENT_INDEX;
@@ -79,41 +82,43 @@
 
 - (id) remove
 {
-    id o = [self objectAtIndex:0];
+    id obj = [self objectAtIndex:0];
     p++;
     // have we hit end of buffer and not backtracking?
     if ( p == [data count] && markDepth==0 ) {
         // if so, it's an opportunity to start filling at index 0 again
         [self clear]; // size goes to 0, but retains memory
     }
-    return o;
+    [obj release];
+    return obj;
 }
 
 -(void) consume
 {
 	[self sync:1];
 	prevElement = [self remove];
-    currentElementIndex++;
+    index++;
 }
 
 -(void) sync:(NSInteger) need
 {
 	NSInteger n = (p + need - 1) - [data count] + 1;
-	if (n > 0) {
+	if ( n > 0 ) {
 		[self fill:n];
 	}
 }
 
 -(void) fill:(NSInteger) n
 {
+    id obj;
 	for (NSInteger i = 1; i <= n; i++) {
-		id o = [self nextElement];
-		if (o == eof) {
+		obj = [self nextElement];
+		if ( obj == eof ) {
 			[data addObject:self.eof];
 			eofElementIndex = [data count] - 1;
 		}
 		else {
-			[data addObject:o];
+			[data addObject:obj];
 		}
 	}
 }
@@ -149,16 +154,6 @@
 -(id) getCurrentSymbol
 {
 	return [self LT:1];
-}
-
--(NSInteger) getIndex
-{
-	return currentElementIndex;
-}
-
-- (void) setIndex:(NSInteger)i
-{
-    currentElementIndex = i;
 }
 
 -(NSInteger) mark

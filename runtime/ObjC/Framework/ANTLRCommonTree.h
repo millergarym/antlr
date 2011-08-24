@@ -29,6 +29,11 @@
 #import "ANTLRBaseTree.h"
 
 @interface ANTLRCommonTree : ANTLRBaseTree <ANTLRTree> {
+	__strong ANTLRCommonToken *token;
+	NSInteger startIndex;
+	NSInteger stopIndex;
+    __strong ANTLRCommonTree *parent;
+    NSInteger childIndex;
 }
 
 + (ANTLRCommonTree *) invalidNode;
@@ -37,12 +42,6 @@
 + (ANTLRCommonTree *) newTreeWithToken:(ANTLRCommonToken *)aToken;
 + (ANTLRCommonTree *) newTreeWithTokenType:(NSInteger)tokenType;
 + (ANTLRCommonTree *) newTreeWithTokenType:(NSInteger)aTType Text:(NSString *)theText;
-#ifdef DONTUSEYET
-+ (id<ANTLRBaseTree>) newTreeWithTokenType:(NSInteger)tokenType;
-+ (id<ANTLRBaseTree>) newTreeWithToken:(id<ANTLRToken>)fromToken TokenType:(NSInteger)tokenType;
-+ (id<ANTLRBaseTree>) newTreeWithToken:(id<ANTLRToken>)fromToken TokenType:(NSInteger)tokenType Text:(NSString *)tokenText;
-+ (id<ANTLRBaseTree>) newTreeWithToken:(id<ANTLRToken>)fromToken Text:(NSString *)tokenText;
-#endif
 
 - (id) init;
 - (id) initWithTreeNode:(ANTLRCommonTree *)aNode;
@@ -56,11 +55,13 @@
 
 - (ANTLRCommonToken *) getToken;
 - (void) setToken:(ANTLRCommonToken *)aToken;
-- (id<ANTLRBaseTree>) dupNode;
-- (NSInteger) getType;
-- (NSString *) getText;
-- (NSUInteger) getLine;
-- (NSUInteger) getCharPositionInLine;
+- (ANTLRCommonToken *) dupNode;
+- (NSInteger)type;
+- (NSString *)text;
+- (NSUInteger)line;
+- (void) setLine:(NSUInteger)aLine;
+- (NSUInteger)charPositionInLine;
+- (void) setCharPositionInLine:(NSUInteger)pos;
 - (ANTLRCommonTree *) getParent;
 - (void) setParent:(ANTLRCommonTree *) t;
 
@@ -81,5 +82,11 @@
  @property (retain, getter=getParent, setter=setParent:) id<ANTLRBaseTree> parentparent;
  @property (assign, getter=getChildIndex, setter=setChildIndex:) NSInteger childIndex;
  */
+
+@property (retain) ANTLRCommonToken *token;
+@property (assign) NSInteger startIndex;
+@property (assign) NSInteger stopIndex;
+@property (retain) ANTLRCommonTree *parent;
+@property (assign) NSInteger childIndex;
 
 @end

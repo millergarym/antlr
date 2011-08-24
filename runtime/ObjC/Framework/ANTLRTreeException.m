@@ -51,6 +51,9 @@
 
 - (void) dealloc
 {
+#ifdef DEBUG_DEALLOC
+    NSLog( @"called dealloc in ANTLRTreeException" );
+#endif
 	[self setOldRoot:nil];
 	[self setNewRoot:nil];
 	[super dealloc];
@@ -60,7 +63,7 @@
 {
 	if (newRoot != aTree) {
 		[aTree retain];
-		[newRoot release];
+		if ( newRoot ) [newRoot release];
 		newRoot = aTree;
 	}
 }
@@ -69,7 +72,7 @@
 {
 	if (oldRoot != aTree) {
 		[aTree retain];
-		[oldRoot release];
+		if ( oldRoot ) [oldRoot release];
 		oldRoot = aTree;
 	}
 }

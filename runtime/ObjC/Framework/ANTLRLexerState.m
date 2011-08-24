@@ -51,6 +51,9 @@
 
 - (void) dealloc
 {
+#ifdef DEBUG_DEALLOC
+    NSLog( @"called dealloc in ANTLRLexerState" );
+#endif
 	[self setText:nil];
 	[self setToken:nil];
 	[super dealloc];
@@ -64,38 +67,38 @@
 - (void) setToken:(id<ANTLRToken>) theToken
 {
 	if (theToken != token) {
-		[token release];
+		if ( token ) [token release];
 		token = [theToken retain];
 	}
 }
 
 
-- (unsigned int) getTokenType
+- (NSUInteger) getTokenType
 {
 	return type;
 }
 
-- (void) setTokenType:(unsigned int) theTokenType
+- (void) setTokenType:(NSUInteger) theTokenType
 {
 	type = theTokenType;
 }
 
-- (unsigned int) getChannel
+- (NSUInteger)channel
 {
 	return channel;
 }
 
-- (void) setChannel:(unsigned int) theChannel
+- (void) setChannel:(NSUInteger) theChannel
 {
 	channel = theChannel;
 }
 
-- (unsigned int) getTokenStartLine
+- (NSUInteger) getTokenStartLine
 {
 	return tokenStartLine;
 }
 
-- (void) setTokenStartLine:(unsigned int) theTokenStartLine
+- (void) setTokenStartLine:(NSUInteger) theTokenStartLine
 {
 	tokenStartLine = theTokenStartLine;
 }
@@ -120,7 +123,7 @@
 	tokenStartCharIndex = theTokenStartCharIndex;
 }
 
-- (NSString *) getText
+- (NSString *) text
 {
 	return text;
 }
@@ -128,7 +131,7 @@
 - (void) setText:(NSString *) theText
 {
 	if (text != theText) {
-		[text release];
+		if ( text ) [text release];
 		text = [theText retain];
 	}
 }

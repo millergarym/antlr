@@ -44,8 +44,9 @@
     
 - (id)initWithLabel:(id<ANTLRToken>)label
 {
-    if ((self = [super init]) != nil) {
-        payload = label;
+    self = [super init];
+    if ( self != nil) {
+        payload = [label retain];
     }
     return self;
 }
@@ -55,12 +56,12 @@
     return nil;
 }
     
-- (NSInteger)getType
+- (NSInteger)type
 {
     return 0;
 }
     
-- (NSString *)getText
+- (NSString *)text
 {
     return [self toString];
 }
@@ -82,17 +83,22 @@
 - (void)setTokenStopIndex:(NSInteger)anIndex
 {
 }
-    
-- (NSString *)toString
+
+- (NSString *)description
 {
     if ( [payload isKindOfClass:[ANTLRCommonToken class]] ) {
         id<ANTLRToken> t = (id<ANTLRToken>)payload;
-        if ( [t getType] == ANTLRTokenTypeEOF ) {
+        if ( t.type == ANTLRTokenTypeEOF ) {
             return @"<EOF>";
         }
-        return [t getText];
+        return [t text];
     }
-    return [payload toString];
+    return [payload description];
+}
+    
+- (NSString *)toString
+{
+    return [self description];
 }
     
 /** Emit a token and all hidden nodes before.  EOF node holds all
@@ -104,7 +110,7 @@
     if ( hiddenTokens!=nil ) {
         for (NSUInteger i = 0; i < [hiddenTokens count]; i++) {
             id<ANTLRToken>  hidden = (id<ANTLRToken> ) [hiddenTokens objectAtIndex:i];
-            [buf appendString:[hidden getText]];
+            [buf appendString:[hidden text]];
         }
     }
     NSString *nodeText = [self toString];
@@ -137,4 +143,7 @@
     
 @synthesize payload;
 @synthesize hiddenTokens;
+@synthesize children;
+@synthesize anException;
+
 @end

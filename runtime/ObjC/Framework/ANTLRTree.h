@@ -24,6 +24,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifndef DEBUG_DEALLOC
+#define DEBUG_DEALLOC
+#endif
+
+#import "AMutableArray.h"
+
 @protocol ANTLRTree < NSObject, NSCopying >
 
 //+ (id<ANTLRTree>) invalidNode;
@@ -46,7 +52,7 @@
 /** Return a list of all ancestors of this node.  The first node of
  *  list is the root and the last is the parent of this node.
  */
-- (NSMutableArray *) getAncestors;
+- (AMutableArray *) getAncestors;
 
 /** This node is what child index? 0..n-1 */
 - (NSInteger) getChildIndex;
@@ -73,7 +79,7 @@
  */
 - (void) replaceChildrenFrom:(NSInteger)startChildIndex To:(NSInteger)stopChildIndex With:(id)t;	
 
-- (NSArray *) getChildren;
+- (NSArray *) children;
 // Add t as a child to this node.  If t is null, do nothing.  If t
 //  is nil, add all children of t to this' children.
 
@@ -108,12 +114,12 @@
 - (id) deepCopyWithZone:(NSZone *)aZone;
 
 #pragma mark Tree Parser support
-- (NSInteger) getType;
-- (NSString *) getText;
+- (NSInteger)type;
+- (NSString *)text;
 // In case we don't have a token payload, what is the line for errors?
-- (NSInteger) getLine;
-- (NSInteger) getCharPositionInLine;
-- (void) setCharPositionInLine:(NSInteger)pos;
+- (NSUInteger)line;
+- (NSUInteger)charPositionInLine;
+- (void) setCharPositionInLine:(NSUInteger)pos;
 
 #pragma mark Informational
 - (NSString *) treeDescription;

@@ -8,6 +8,7 @@ import re
 import tempfile
 import shutil
 import inspect
+import hashlib
 from distutils.errors import *
 import antlr3
 
@@ -17,6 +18,11 @@ def unlink(path):
     except OSError, exc:
         if exc.errno != errno.ENOENT:
             raise
+
+
+class GrammarCompileError(Exception):
+  """Grammar failed to compile."""
+  pass
 
 
 # At least on MacOSX tempdir (/tmp) is a symlink. It's sometimes dereferences,
@@ -61,7 +67,7 @@ if 'CLASSPATH' not in os.environ:
     baseDir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
     libDir = os.path.join(baseDir, 'lib')
 
-    jar = os.path.join(libDir, 'stringtemplate-3.1b1.jar')
+    jar = os.path.join(libDir, 'ST-4.0.1.jar')
     if not os.path.isfile(jar):
         raise DistutilsFileError(
             "Missing file '%s'. Grap it from a distribution package."
@@ -91,7 +97,7 @@ if 'CLASSPATH' not in os.environ:
 
 else:
     classpath = ''
-    
+
 
 class ANTLRTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
@@ -100,15 +106,23 @@ class ANTLRTest(unittest.TestCase):
         self.moduleName = os.path.splitext(os.path.basename(sys.modules[self.__module__].__file__))[0]
         self.className = self.__class__.__name__
         self._baseDir = None
-            
+
         self.lexerModule = None
         self.parserModule = None
 
         self.grammarName = None
         self.grammarType = None
 
-        self.antlr_version = antlr3.version_str_to_tuple(
-            os.environ.get('ANTLRVERSION', 'HEAD'))
+
+    def assertListEqual(self, a, b):
+        if a == b:
+            return
+
+        import difflib
+        a = [str(l) + '\n' for l in a]
+        b = [str(l) + '\n' for l in b]
+
+        raise AssertionError(''.join(difflib.unified_diff(a, b)))
 
 
     @property
@@ -141,7 +155,7 @@ class ANTLRTest(unittest.TestCase):
 
         return self._baseDir
 
-    
+
     def _invokeantlr(self, dir, file, options, javaOptions=''):
         cmd = 'cd %s; java %s %s org.antlr.Tool -o . %s %s 2>&1' % (
             dir, javaOptions, classpath, options, file
@@ -160,25 +174,25 @@ class ANTLRTest(unittest.TestCase):
             failed = True
 
         if failed:
-            raise RuntimeError(
+            raise GrammarCompileError(
                 "Failed to compile grammar '%s':\n%s\n\n" % (file, cmd)
                 + output
                 )
-        
-        
+
+
     def compileGrammar(self, grammarName=None, options='', javaOptions=''):
         if grammarName is None:
             grammarName = self.moduleName + '.g'
-            
+
         self._baseDir = os.path.join(
             testbasedir,
             self.moduleName)
         if not os.path.isdir(self._baseDir):
             os.makedirs(self._baseDir)
-            
+
         if self.grammarName is None:
             self.grammarName = os.path.splitext(grammarName)[0]
-        
+
         grammarPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), grammarName)
 
         # get type and name from first grammar line
@@ -197,92 +211,91 @@ class ANTLRTest(unittest.TestCase):
             return
 
         try:
-            # get dependencies from antlr
-            if grammarName in dependencyCache:
-                dependencies = dependencyCache[grammarName]
+        #     # get dependencies from antlr
+        #     if grammarName in dependencyCache:
+        #         dependencies = dependencyCache[grammarName]
 
-            else:
-                dependencies = []
-                cmd = ('cd %s; java %s %s org.antlr.Tool -o . -depend %s 2>&1'
-                       % (self.baseDir, javaOptions, classpath, grammarPath)
-                       )
+        #     else:
+        #         dependencies = []
+        #         cmd = ('cd %s; java %s %s org.antlr.Tool -o . -depend %s 2>&1'
+        #                % (self.baseDir, javaOptions, classpath, grammarPath))
 
-                output = ""
-                failed = False
+        #         output = ""
+        #         failed = False
 
-                fp = os.popen(cmd)
-                for line in fp:
-                    output += line
+        #         fp = os.popen(cmd)
+        #         for line in fp:
+        #             output += line
 
-                    if line.startswith('error('):
-                        failed = True
-                    elif ':' in line:
-                        a, b = line.strip().split(':', 1)
-                        dependencies.append(
-                            (os.path.join(self.baseDir, a.strip()),
-                             [os.path.join(self.baseDir, b.strip())])
-                            )
+        #             if line.startswith('error('):
+        #                 failed = True
+        #             elif ':' in line:
+        #                 a, b = line.strip().split(':', 1)
+        #                 dependencies.append(
+        #                     (os.path.join(self.baseDir, a.strip()),
+        #                      [os.path.join(self.baseDir, b.strip())])
+        #                     )
 
-                rc = fp.close()
-                if rc is not None:
-                    failed = True
+        #         rc = fp.close()
+        #         if rc is not None:
+        #             failed = True
 
-                if failed:
-                    raise RuntimeError(
-                        "antlr -depend failed with code %s on grammar '%s':\n\n"
-                        % (rc, grammarName)
-                        + cmd
-                        + "\n"
-                        + output
-                        )
+        #         if failed:
+        #             raise GrammarCompileError(
+        #                 "antlr -depend failed with code %s on grammar '%s':\n\n"
+        #                 % (rc, grammarName)
+        #                 + cmd
+        #                 + "\n"
+        #                 + output
+        #                 )
 
-                # add dependencies to my .stg files
-                templateDir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'src', 'org', 'antlr', 'codegen', 'templates', 'Python'))
-                templates = glob.glob(os.path.join(templateDir, '*.stg'))
-                
-                for dst, src in dependencies:
-                    src.extend(templates)
+        #         # add dependencies to my .stg files
+        #         templateDir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'tool', 'src', 'main', 'resources', 'org', 'antlr', 'codegen', 'templates', 'Python'))
+        #         templates = glob.glob(os.path.join(templateDir, '*.stg'))
 
-                dependencyCache[grammarName] = dependencies
+        #         for dst, src in dependencies:
+        #             src.extend(templates)
+
+        #         dependencyCache[grammarName] = dependencies
+
+        #     rebuild = False
+        #     for dest, sources in dependencies:
+        #         if not os.path.isfile(dest):
+        #             rebuild = True
+        #             break
+
+        #         for source in sources:
+        #             if os.path.getmtime(source) > os.path.getmtime(dest):
+        #                 rebuild = True
+        #                 break
 
 
-            rebuild = False
+        #     if rebuild:
+        #         self._invokeantlr(self.baseDir, grammarPath, options, javaOptions)
 
-            for dest, sources in dependencies:
-                if not os.path.isfile(dest):
-                    rebuild = True
-                    break
-
-                for source in sources:
-                    if os.path.getmtime(source) > os.path.getmtime(dest):
-                        rebuild = True
-                        break
-                    
-
-            if rebuild:
-                self._invokeantlr(self.baseDir, grammarPath, options, javaOptions)
+            self._invokeantlr(self.baseDir, grammarPath, options, javaOptions)
 
         except:
             # mark grammar as broken
             compileErrorCache[grammarName] = True
             raise
-        
+
 
     def lexerClass(self, base):
         """Optionally build a subclass of generated lexer class"""
-        
+
         return base
 
 
     def parserClass(self, base):
         """Optionally build a subclass of generated parser class"""
-        
+
         return base
 
 
     def walkerClass(self, base):
         """Optionally build a subclass of generated walker class"""
-        
+
         return base
 
 
@@ -293,28 +306,28 @@ class ANTLRTest(unittest.TestCase):
         return imp.load_module(
             name, modFile, modPathname, modDescription
             )
-    
-        
+
+
     def getLexer(self, *args, **kwargs):
         """Build lexer instance. Arguments are passed to lexer.__init__()."""
 
-        if self.grammarType == 'lexer' and self.antlr_version >= (3, 1, 0, 0):
+        if self.grammarType == 'lexer':
             self.lexerModule = self.__load_module(self.grammarName)
             cls = getattr(self.lexerModule, self.grammarName)
         else:
             self.lexerModule = self.__load_module(self.grammarName + 'Lexer')
             cls = getattr(self.lexerModule, self.grammarName + 'Lexer')
-            
+
         cls = self.lexerClass(cls)
 
         lexer = cls(*args, **kwargs)
 
         return lexer
-    
+
 
     def getParser(self, *args, **kwargs):
         """Build parser instance. Arguments are passed to parser.__init__()."""
-        
+
         if self.grammarType == 'parser':
             self.lexerModule = self.__load_module(self.grammarName)
             cls = getattr(self.lexerModule, self.grammarName)
@@ -326,11 +339,11 @@ class ANTLRTest(unittest.TestCase):
         parser = cls(*args, **kwargs)
 
         return parser
-    
+
 
     def getWalker(self, *args, **kwargs):
         """Build walker instance. Arguments are passed to walker.__init__()."""
-        
+
         self.walkerModule = self.__load_module(self.grammarName + 'Walker')
         cls = getattr(self.walkerModule, self.grammarName + 'Walker')
         cls = self.walkerClass(cls)
@@ -341,6 +354,14 @@ class ANTLRTest(unittest.TestCase):
 
 
     def writeInlineGrammar(self, grammar):
+        # Create a unique ID for this test and use it as the grammar name,
+        # to avoid class name reuse. This kinda sucks. Need to find a way so
+        # tests can use the same grammar name without messing up the namespace.
+        # Well, first I should figure out what the exact problem is...
+        id = hashlib.md5(self.baseDir).hexdigest()[-8:]
+        grammar = grammar.replace('$TP', 'TP' + id)
+        grammar = grammar.replace('$T', 'T' + id)
+
         # get type and name from first grammar line
         m = re.match(r'\s*((lexer|parser|tree)\s+|)grammar\s+(\S+);', grammar, re.MULTILINE)
         assert m is not None, grammar
@@ -352,26 +373,26 @@ class ANTLRTest(unittest.TestCase):
         assert grammarType in ('lexer', 'parser', 'tree', 'combined'), grammarType
 
         grammarPath = os.path.join(self.baseDir, grammarName + '.g')
-        
+
         # dump temp grammar file
         fp = open(grammarPath, 'w')
         fp.write(grammar)
         fp.close()
 
         return grammarName, grammarPath, grammarType
-    
+
 
     def writeFile(self, name, contents):
         testDir = os.path.dirname(os.path.abspath(__file__))
         path = os.path.join(self.baseDir, name)
-        
+
         fp = open(path, 'w')
         fp.write(contents)
         fp.close()
 
         return path
 
-    
+
     def compileInlineGrammar(self, grammar, options='', javaOptions='',
                              returnModule=False):
         # write grammar file
@@ -384,25 +405,25 @@ class ANTLRTest(unittest.TestCase):
             options,
             javaOptions
             )
-        
+
         if grammarType == 'combined':
             lexerMod = self.__load_module(grammarName + 'Lexer')
             parserMod = self.__load_module(grammarName + 'Parser')
             if returnModule:
                 return lexerMod, parserMod
-            
+
             lexerCls = getattr(lexerMod, grammarName + 'Lexer')
             lexerCls = self.lexerClass(lexerCls)
             parserCls = getattr(parserMod, grammarName + 'Parser')
             parserCls = self.parserClass(parserCls)
 
             return lexerCls, parserCls
-        
+
         if grammarType == 'lexer':
             lexerMod = self.__load_module(grammarName)
             if returnModule:
                 return lexerMod
-            
+
             lexerCls = getattr(lexerMod, grammarName)
             lexerCls = self.lexerClass(lexerCls)
 
@@ -412,7 +433,7 @@ class ANTLRTest(unittest.TestCase):
             parserMod = self.__load_module(grammarName)
             if returnModule:
                 return parserMod
-            
+
             parserCls = getattr(parserMod, grammarName)
             parserCls = self.parserClass(parserCls)
 
@@ -422,7 +443,7 @@ class ANTLRTest(unittest.TestCase):
             walkerMod = self.__load_module(grammarName)
             if returnModule:
                 return walkerMod
-            
+
             walkerCls = getattr(walkerMod, grammarName)
             walkerCls = self.walkerClass(walkerCls)
 

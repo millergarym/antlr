@@ -1,5 +1,5 @@
 // [The "BSD licence"]
-// Copyright (c) 2006-2007 Kay Roepke
+// Copyright (c) 2006-2007 Kay Roepke (c) 2011 Alan Condit
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -24,6 +24,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#import <ANTLR/ACBTree.h>
+#import <ANTLR/AMutableArray.h>
+#import <ANTLR/AMutableDictionary.h>
 #import <ANTLR/ANTLRBaseMapElement.h>
 #import <ANTLR/ANTLRBaseRecognizer.h>
 #import <ANTLR/ANTLRBaseStack.h>
@@ -81,6 +84,7 @@
 #import <ANTLR/ANTLRRecognitionException.h>
 #import <ANTLR/ANTLRRecognizerSharedState.h>
 #import <ANTLR/ANTLRRewriteRuleElementStream.h>
+#import <ANTLR/ANTLRRewriteRuleNodeStream.h>
 #import <ANTLR/ANTLRRewriteRuleSubtreeStream.h>
 #import <ANTLR/ANTLRRewriteRuleTokenStream.h>
 #import <ANTLR/ANTLRRuleMemo.h>
@@ -107,3 +111,4 @@
 //#import <ANTLR/ANTLRUnbufferedCommonTreeNodeStreamState.h>
 #import <ANTLR/ANTLRUniqueIDMap.h>
 #import <ANTLR/ANTLRUnwantedTokenException.h>
+#import <ANTLR/ArrayIterator.h>

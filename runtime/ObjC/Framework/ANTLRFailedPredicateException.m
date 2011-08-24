@@ -29,6 +29,9 @@
 
 @implementation ANTLRFailedPredicateException
 
+@synthesize predicate;
+@synthesize ruleName;
+
 + (ANTLRFailedPredicateException *) newException:(NSString *)theRuleName predicate:(NSString *)thePredicate stream:(id<ANTLRIntStream>)theStream
 {
 	return [[ANTLRFailedPredicateException alloc] initWithRuleName:theRuleName predicate:thePredicate stream:theStream];
@@ -45,6 +48,9 @@
 
 - (void) dealloc
 {
+#ifdef DEBUG_DEALLOC
+    NSLog( @"called dealloc in ANTLRFailedPredicateException" );
+#endif
 	[self setPredicate:nil];
 	[self setRuleName:nil];
 	[super dealloc];
@@ -67,7 +73,7 @@
 {
 	if (thePredicate != predicate) {
 		[thePredicate retain];
-		[predicate release];
+		if ( predicate ) [predicate release];
 		predicate = thePredicate;
 	}
 }
@@ -81,7 +87,7 @@
 {
 	if (theRuleName != ruleName) {
 		[theRuleName retain];
-		[ruleName release];
+		if ( ruleName ) [ruleName release];
 		ruleName = theRuleName;
 	}
 }

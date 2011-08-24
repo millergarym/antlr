@@ -83,96 +83,110 @@ extern NSInteger debug;
 @synthesize tokens;
 @synthesize adaptor;
 @synthesize uniqueNavigationNodes;
-@synthesize p;
+@synthesize index;
 @synthesize lastMarker;
 @synthesize calls;
 @synthesize e;
 @synthesize currentSymbol;
 
-+ (ANTLRBufferedTreeNodeStream *) newANTLRBufferedTreeNodeStream:(id<ANTLRBaseTree>) aTree
++ (ANTLRBufferedTreeNodeStream *) newANTLRBufferedTreeNodeStream:(ANTLRCommonTree *) aTree
 {
-    return [((ANTLRBufferedTreeNodeStream *)[ANTLRBufferedTreeNodeStream alloc]) initWithTree:(id<ANTLRBaseTree>)aTree];
+    return [((ANTLRBufferedTreeNodeStream *)[ANTLRBufferedTreeNodeStream alloc]) initWithTree:(ANTLRCommonTree *)aTree];
 }
 
-+ (ANTLRBufferedTreeNodeStream *) newANTLRBufferedTreeNodeStream:(id<ANTLRTreeAdaptor>)adaptor Tree:(id<ANTLRBaseTree>)aTree
++ (ANTLRBufferedTreeNodeStream *) newANTLRBufferedTreeNodeStream:(id<ANTLRTreeAdaptor>)adaptor Tree:(ANTLRCommonTree *)aTree
 {
-    return [[ANTLRBufferedTreeNodeStream alloc] initWithTreeAdaptor:adaptor Tree:(id<ANTLRBaseTree>)aTree];
+    return [[ANTLRBufferedTreeNodeStream alloc] initWithTreeAdaptor:adaptor Tree:(ANTLRCommonTree *)aTree];
 }
 
-+ (ANTLRBufferedTreeNodeStream *) newANTLRBufferedTreeNodeStream:(id<ANTLRTreeAdaptor>)adaptor Tree:(id<ANTLRBaseTree>)aTree withBufferSize:(NSInteger)initialBufferSize
++ (ANTLRBufferedTreeNodeStream *) newANTLRBufferedTreeNodeStream:(id<ANTLRTreeAdaptor>)adaptor Tree:(ANTLRCommonTree *)aTree withBufferSize:(NSInteger)initialBufferSize
 {
-    return [[ANTLRBufferedTreeNodeStream alloc] initWithTreeAdaptor:adaptor Tree:(id<ANTLRBaseTree>)aTree WithBufferSize:initialBufferSize];
+    return [[ANTLRBufferedTreeNodeStream alloc] initWithTreeAdaptor:adaptor Tree:(ANTLRCommonTree *)aTree WithBufferSize:initialBufferSize];
 }
 
 -(ANTLRBufferedTreeNodeStream *) init
 {
 	self = [super init];
 	if (self) {
-		p = -1;
+		index = -1;
 		uniqueNavigationNodes = NO;
         root = [[ANTLRCommonTree alloc] init];
         //		tokens = tree;
-        adaptor = [[ANTLRCommonTreeAdaptor alloc] init];
-        nodes = [NSMutableArray arrayWithCapacity:DEFAULT_INITIAL_BUFFER_SIZE];
-        down = [adaptor createTree:ANTLRTokenTypeDOWN Text:@"DOWN"];
-        up = [adaptor createTree:ANTLRTokenTypeUP Text:@"UP"];
-        eof = [adaptor createTree:ANTLRTokenTypeEOF Text:@"EOF"];
+        adaptor = [[[ANTLRCommonTreeAdaptor alloc] init] retain];
+        nodes = [[AMutableArray arrayWithCapacity:DEFAULT_INITIAL_BUFFER_SIZE] retain];
+        down = [[adaptor createTree:ANTLRTokenTypeDOWN Text:@"DOWN"] retain];
+        up = [[adaptor createTree:ANTLRTokenTypeUP Text:@"UP"] retain];
+        eof = [[adaptor createTree:ANTLRTokenTypeEOF Text:@"EOF"] retain];
     }
 	return self;
 }
 
-- (ANTLRBufferedTreeNodeStream *)initWithTree:(id<ANTLRBaseTree>) aTree
+- (ANTLRBufferedTreeNodeStream *)initWithTree:(ANTLRCommonTree *) aTree
 {
 	self = [super init];
 	if (self) {
-		p = -1;
+		index = -1;
 		uniqueNavigationNodes = NO;
         root = aTree;
         //		tokens = aTree;
-        adaptor = [[ANTLRCommonTreeAdaptor alloc] init];
-        nodes = [NSMutableArray arrayWithCapacity:DEFAULT_INITIAL_BUFFER_SIZE];
-        down = [adaptor createTree:ANTLRTokenTypeDOWN Text:@"DOWN"];
-        up = [adaptor createTree:ANTLRTokenTypeUP Text:@"UP"];
-        eof = [adaptor createTree:ANTLRTokenTypeEOF Text:@"EOF"];
+        adaptor = [[[ANTLRCommonTreeAdaptor alloc] init] retain];
+        nodes = [[AMutableArray arrayWithCapacity:DEFAULT_INITIAL_BUFFER_SIZE] retain];
+        down = [[adaptor createTree:ANTLRTokenTypeDOWN Text:@"DOWN"] retain];
+        up = [[adaptor createTree:ANTLRTokenTypeUP Text:@"UP"] retain];
+        eof = [[adaptor createTree:ANTLRTokenTypeEOF Text:@"EOF"] retain];
     }
 	return self;
 }
 
--(ANTLRBufferedTreeNodeStream *) initWithTreeAdaptor:(ANTLRCommonTreeAdaptor *)anAdaptor Tree:(id<ANTLRBaseTree>)aTree
+-(ANTLRBufferedTreeNodeStream *) initWithTreeAdaptor:(ANTLRCommonTreeAdaptor *)anAdaptor Tree:(ANTLRCommonTree *)aTree
 {
 	self = [super init];
 	if (self) {
-		p = -1;
+		index = -1;
 		uniqueNavigationNodes = NO;
         root = aTree;
         //		tokens = aTree;
-        adaptor = anAdaptor;
-        nodes = [NSMutableArray arrayWithCapacity:DEFAULT_INITIAL_BUFFER_SIZE];
-        down = [adaptor createTree:ANTLRTokenTypeDOWN Text:@"DOWN"];
-        up = [adaptor createTree:ANTLRTokenTypeUP Text:@"UP"];
-        eof = [adaptor createTree:ANTLRTokenTypeEOF Text:@"EOF"];
+        adaptor = [anAdaptor retain];
+        nodes = [[AMutableArray arrayWithCapacity:DEFAULT_INITIAL_BUFFER_SIZE] retain];
+        down = [[adaptor createTree:ANTLRTokenTypeDOWN Text:@"DOWN"] retain];
+        up = [[adaptor createTree:ANTLRTokenTypeUP Text:@"UP"] retain];
+        eof = [[adaptor createTree:ANTLRTokenTypeEOF Text:@"EOF"] retain];
     }
 	return self;
 }
 
--(ANTLRBufferedTreeNodeStream *) initWithTreeAdaptor:(ANTLRCommonTreeAdaptor *)anAdaptor Tree:(id<ANTLRBaseTree>)aTree WithBufferSize:(NSInteger)bufferSize
+-(ANTLRBufferedTreeNodeStream *) initWithTreeAdaptor:(ANTLRCommonTreeAdaptor *)anAdaptor Tree:(ANTLRCommonTree *)aTree WithBufferSize:(NSInteger)bufferSize
 {
 	self = [super init];
 	if (self) {
         //		down = [adaptor createToken:ANTLRTokenTypeDOWN withText:@"DOWN"];
         //		up = [adaptor createToken:ANTLRTokenTypeDOWN withText:@"UP"];
         //		eof = [adaptor createToken:ANTLRTokenTypeDOWN withText:@"EOF"];
-		p = -1;
+		index = -1;
 		uniqueNavigationNodes = NO;
         root = aTree;
         //		tokens = aTree;
-        adaptor = anAdaptor;
-        nodes = [NSMutableArray arrayWithCapacity:bufferSize];
-        down = [adaptor createTree:ANTLRTokenTypeDOWN Text:@"DOWN"];
-        up = [adaptor createTree:ANTLRTokenTypeUP Text:@"UP"];
-        eof = [adaptor createTree:ANTLRTokenTypeEOF Text:@"EOF"];
+        adaptor = [anAdaptor retain];
+        nodes = [[AMutableArray arrayWithCapacity:bufferSize] retain];
+        down = [[adaptor createTree:ANTLRTokenTypeDOWN Text:@"DOWN"] retain];
+        up = [[adaptor createTree:ANTLRTokenTypeUP Text:@"UP"] retain];
+        eof = [[adaptor createTree:ANTLRTokenTypeEOF Text:@"EOF"] retain];
 	}
 	return self;
+}
+
+- (void)dealloc
+{
+#ifdef DEBUG_DEALLOC
+    NSLog( @"called dealloc in ANTLRBufferedTreeNodeStream" );
+#endif
+    if ( adaptor ) [adaptor release];
+    if ( nodes ) [nodes release];
+    if ( root ) [root release];
+    if ( down ) [down release];
+    if ( up ) [up release];
+    if ( eof ) [eof release];
+	[super dealloc];
 }
 
 - (id) copyWithZone:(NSZone *)aZone
@@ -195,7 +209,7 @@ extern NSInteger debug;
     if ( adaptor )
         copy.adaptor = [adaptor copyWithZone:aZone];
     copy.uniqueNavigationNodes = self.uniqueNavigationNodes;
-    copy.p = self.p;
+    copy.index = self.index;
     copy.lastMarker = self.lastMarker;
     if ( calls )
         copy.calls = [calls copyWithZone:aZone];
@@ -208,10 +222,10 @@ extern NSInteger debug;
 {
 	[self fillBufferWithTree:root];
 	// if (debug > 1) NSLog("revIndex=%@", tokenTypeToStreamIndexesMap);
-	p = 0; // buffer of nodes intialized now
+	index = 0; // buffer of nodes intialized now
 }
 
--(void) fillBufferWithTree:(id<ANTLRBaseTree>) aTree
+-(void) fillBufferWithTree:(ANTLRCommonTree *) aTree
 {
 	BOOL empty = [adaptor isNil:aTree];
 	if (!empty) {
@@ -230,9 +244,9 @@ extern NSInteger debug;
 	}
 }
 
--(NSInteger) getNodeIndex:(id<ANTLRBaseTree>) node
+-(NSInteger) getNodeIndex:(ANTLRCommonTree *) node
 {
-	if (p == -1) {
+	if (index == -1) {
 		[self fillBuffer];
 	}
 	for (NSUInteger i = 0; i < [nodes count]; i++) {
@@ -269,7 +283,7 @@ extern NSInteger debug;
 
 -(id) getNode:(NSUInteger) i
 {
-	if (p == -1) {
+	if (index == -1) {
 		[self fillBuffer];
 	}
 	return [nodes objectAtIndex:i];
@@ -277,7 +291,7 @@ extern NSInteger debug;
 
 -(id) LT:(NSInteger) k
 {
-	if (p == -1) {
+	if (index == -1) {
 		[self fillBuffer];
 	}
 	if (k == 0) {
@@ -286,10 +300,10 @@ extern NSInteger debug;
 	if (k < 0) {
 		return [self LB:-k];
 	}
-	if ((p + k - 1) >= [nodes count]) {
+	if ((index + k - 1) >= [nodes count]) {
 		return eof;
 	}
-	return [nodes objectAtIndex:(p + k - 1)];
+	return [nodes objectAtIndex:(index + k - 1)];
 }
 
 -(id) getCurrentSymbol
@@ -302,13 +316,13 @@ extern NSInteger debug;
 	if (k == 0) {
 		return nil;
 	}
-	if ((p - k) < 0) {
+	if ((index - k) < 0) {
 		return nil;
 	}
-	return [nodes objectAtIndex:(p - k)];
+	return [nodes objectAtIndex:(index - k)];
 }
 
-- (id<ANTLRBaseTree>)getTreeSource
+- (ANTLRCommonTree *)getTreeSource
 {
     return root;
 }
@@ -350,10 +364,10 @@ extern NSInteger debug;
 
 -(void) consume
 {
-	if (p == -1) {
+	if (index == -1) {
 		[self fillBuffer];
 	}
-	p++;
+	index++;
 }
 
 -(NSInteger) LA:(NSInteger) i
@@ -363,21 +377,16 @@ extern NSInteger debug;
 
 -(NSInteger) mark
 {
-	if (p == -1) {
+	if (index == -1) {
 		[self fillBuffer];
 	}
-	lastMarker = [self getIndex];
+	lastMarker = self.index;
 	return lastMarker;
 }
 
 -(void) release:(NSInteger) marker
 {
 	// do nothing
-}
-
--(NSInteger) index
-{
-	return p;
 }
 
 -(void) rewind:(NSInteger) marker
@@ -392,10 +401,10 @@ extern NSInteger debug;
 
 -(void) seek:(NSInteger) i
 {
-	if (p == -1) {
+	if (index == -1) {
 		[self fillBuffer];
 	}
-	p = i;
+	index = i;
 }
 
 -(void) push:(NSInteger) i
@@ -403,7 +412,7 @@ extern NSInteger debug;
 	if (calls == nil) {
 		calls = [ANTLRIntArray newArrayWithLen:INITIAL_CALL_STACK_SIZE];
 	}
-	[calls push:p];
+	[calls push:index];
 	[self seek:i];
 }
 
@@ -416,7 +425,7 @@ extern NSInteger debug;
 
 -(void) reset
 {
-	p = 0;
+	index = 0;
 	lastMarker = 0;
 	if (calls != nil) {
 		[calls reset];
@@ -425,7 +434,7 @@ extern NSInteger debug;
 
 -(NSUInteger) count
 {
-	if (p == -1) {
+	if (index == -1) {
 		[self fillBuffer];
 	}
 	return [nodes count];
@@ -444,7 +453,7 @@ extern NSInteger debug;
 	return e;
 }
 
--(void) replaceChildren:(id<ANTLRBaseTree>) parent From:(NSInteger)startIdx To:(NSInteger)stopIdx With:(id<ANTLRBaseTree>)aTree
+-(void) replaceChildren:(ANTLRCommonTree *) parent From:(NSInteger)startIdx To:(NSInteger)stopIdx With:(ANTLRCommonTree *)aTree
 {
 	if (parent != nil) {
 		[adaptor replaceChildren:parent From:startIdx To:stopIdx With:aTree];
@@ -453,13 +462,13 @@ extern NSInteger debug;
 
 -(NSString *) toTokenTypeString
 {
-	if (p == -1)
+	if (index == -1)
 	{
 		[self fillBuffer];
 	}
 	NSMutableString *buf = [NSMutableString stringWithCapacity:10];
 	for (NSUInteger i= 0; i < [nodes count]; i++) {
-		id<ANTLRBaseTree> aTree = (id<ANTLRBaseTree>)[self getNode:i];
+		ANTLRCommonTree * aTree = (ANTLRCommonTree *)[self getNode:i];
 		[buf appendFormat:@" %d", [adaptor getType:aTree]];
 	}
 	return buf;
@@ -467,12 +476,12 @@ extern NSInteger debug;
 
 -(NSString *) toTokenString:(NSInteger)aStart ToEnd:(NSInteger)aStop
 {
-	if (p == -1) {
+	if (index == -1) {
 		[self fillBuffer];
 	}
 	NSMutableString *buf = [NSMutableString stringWithCapacity:10];
 	for (NSUInteger i = aStart; i < [nodes count] && i <= aStop; i++) {
-		id<ANTLRBaseTree> t = (id<ANTLRBaseTree>)[self getNode:i];
+		ANTLRCommonTree * t = (ANTLRCommonTree *)[self getNode:i];
 		[buf appendFormat:@" %d", [adaptor getType:t]];
 	}
 	return buf;
@@ -483,7 +492,7 @@ extern NSInteger debug;
 	if (aStart == nil || aStop == nil) {
 		return nil;
 	}
-	if (p == -1) {
+	if (index == -1) {
 		[self fillBuffer];
 	}
 	
@@ -501,7 +510,7 @@ extern NSInteger debug;
         [tokens toStringFromStart:beginTokenIndex ToEnd:endTokenIndex];
 	}
 	// walk nodes looking for aStart
-	id<ANTLRBaseTree> aTree = nil;
+	ANTLRCommonTree * aTree = nil;
 	NSUInteger i = 0;
 	for (; i < [nodes count]; i++) {
 		aTree = [nodes objectAtIndex:i];
@@ -529,13 +538,19 @@ extern NSInteger debug;
 }
 
 // getters and setters
-- (NSMutableArray *) getNodes
+- (AMutableArray *) getNodes
 {
     return nodes;
 }
 
-- (id<ANTLRBaseTree>) getEof
+- (id) eof
 {
     return eof;
 }
+
+- (void) setEof:(id)theEOF
+{
+    eof = theEOF;
+}
+
 @end

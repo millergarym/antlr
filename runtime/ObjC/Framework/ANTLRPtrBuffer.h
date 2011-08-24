@@ -37,12 +37,11 @@
 #define BUFFSIZE         101
 
 @interface ANTLRPtrBuffer : ANTLRLinkBase {
-	//ANTLRPtrBuffer *fNext;
     NSUInteger BuffSize;
     NSUInteger count;
     NSUInteger ptr;
-    NSMutableData *buffer;
-    id *ptrBuffer;
+    __strong NSMutableData *buffer;
+    __strong id *ptrBuffer;
 }
 
 @property (getter=getBuffSize, setter=setBuffSize:) NSUInteger BuffSize;

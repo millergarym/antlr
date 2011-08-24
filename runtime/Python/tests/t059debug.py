@@ -19,7 +19,9 @@ class Debugger(threading.Thread):
 
     def run(self):
         # create listening socket
-        while True:
+        s = None
+        tstart = time.time()
+        while time.time() - tstart < 10:
             try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect(('127.0.0.1', self.port))
@@ -29,32 +31,43 @@ class Debugger(threading.Thread):
                     raise
                 time.sleep(0.1)
 
+        if s is None:
+            self.events.append(['nosocket'])
+            return
+
         s.setblocking(1)
+        s.settimeout(10.0)
 
         output = s.makefile('w', 0)
         input = s.makefile('r', 0)
 
-        # handshake
-        l = input.readline().strip()
-        assert l == 'ANTLR 2'
-        l = input.readline().strip()
-        assert l.startswith('grammar "')
-
-        output.write('ACK\n')
-        output.flush()
-
-        while True:
-            event = input.readline().strip()
-            self.events.append(event.split('\t'))
+        try:
+            # handshake
+            l = input.readline().strip()
+            assert l == 'ANTLR 2'
+            l = input.readline().strip()
+            assert l.startswith('grammar "')
 
             output.write('ACK\n')
             output.flush()
 
-            if event == 'terminate':
-                break
+            while True:
+                event = input.readline().strip()
+                self.events.append(event.split('\t'))
+
+                output.write('ACK\n')
+                output.flush()
+
+                if event == 'terminate':
+                    self.success = True
+                    break
+
+        except socket.timeout:
+            self.events.append(['timeout'])
+        except socket.error, exc:
+            self.events.append(['socketerror', exc.args])
 
         s.close()
-        self.success = True
 
 
 class T(testbase.ANTLRTest):
@@ -78,7 +91,7 @@ class T(testbase.ANTLRTest):
             tStream = antlr3.CommonTokenStream(lexer)
             parser = parserCls(tStream, dbg=listener, port=port, **parser_args)
             getattr(parser, grammarEntry)()
-    
+
         finally:
             if listener is None:
                 debugger.join()
@@ -119,7 +132,7 @@ class T(testbase.ANTLRTest):
                     "exitRule a"]
         found = [event for event in listener.events
                  if not event.startswith("LT ")]
-        self.assertEqual(found, expected)
+        self.assertListEqual(found, expected)
 
     def testSocketProxy(self):
         grammar = textwrap.dedent(
@@ -147,14 +160,14 @@ class T(testbase.ANTLRTest):
                     ['LT', '1', '0', '4', '0', '1', '0', '"a'],
                     ['consumeToken', '0', '4', '0', '1', '0', '"a'],
                     ['location', '6', '8'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                    ['consumeToken', '-1', '-1', '0', '0', '-1', '"'],
+                    ['LT', '1', '-1', '-1', '0', '1', '1', '"<EOF>'],
+                    ['LT', '1', '-1', '-1', '0', '1', '1', '"<EOF>'],
+                    ['consumeToken', '-1', '-1', '0', '1', '1', '"<EOF>'],
                     ['location', '6', '11'],
                     ['exitRule', 'T.g', 'a'],
                     ['terminate']]
 
-        self.assertEqual(debugger.events, expected)
+        self.assertListEqual(debugger.events, expected)
 
     def testRecognitionException(self):
         grammar = textwrap.dedent(
@@ -185,20 +198,20 @@ class T(testbase.ANTLRTest):
                     ['location', '6', '8'],
                     ['LT', '1', '2', '4', '0', '1', '2', '"b'],
                     ['LT', '1', '2', '4', '0', '1', '2', '"b'],
-                    ['LT', '2', '-1', '-1', '0', '0', '-1', '"'],
+                    ['LT', '2', '-1', '-1', '0', '1', '3', '"<EOF>'],
                     ['LT', '1', '2', '4', '0', '1', '2', '"b'],
                     ['LT', '1', '2', '4', '0', '1', '2', '"b'],
                     ['beginResync'],
                     ['consumeToken', '2', '4', '0', '1', '2', '"b'],
                     ['endResync'],
                     ['exception', 'UnwantedTokenException', '2', '1', '2'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                    ['consumeToken', '-1', '-1', '0', '0', '-1', '"'],
+                    ['LT', '1', '-1', '-1', '0', '1', '3', '"<EOF>'],
+                    ['consumeToken', '-1', '-1', '0', '1', '3', '"<EOF>'],
                     ['location', '6', '11'],
                     ['exitRule', 'T.g', 'a'],
                     ['terminate']]
 
-        self.assertEqual(debugger.events, expected)
+        self.assertListEqual(debugger.events, expected)
 
 
     def testSemPred(self):
@@ -229,14 +242,14 @@ class T(testbase.ANTLRTest):
                     ['LT', '1', '0', '4', '0', '1', '0', '"a'],
                     ['consumeToken', '0', '4', '0', '1', '0', '"a'],
                     ['location', '6', '16'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                    ['consumeToken', '-1', '-1', '0', '0', '-1', '"'],
+                    ['LT', '1', '-1', '-1', '0', '1', '1', '"<EOF>'],
+                    ['LT', '1', '-1', '-1', '0', '1', '1', '"<EOF>'],
+                    ['consumeToken', '-1', '-1', '0', '1', '1', '"<EOF>'],
                     ['location', '6', '19'],
                     ['exitRule', 'T.g', 'a'],
                     ['terminate']]
 
-        self.assertEqual(debugger.events, expected)
+        self.assertListEqual(debugger.events, expected)
 
 
     def testPositiveClosureBlock(self):
@@ -268,7 +281,7 @@ class T(testbase.ANTLRTest):
                     ['consumeHiddenToken', '1', '6', '99', '1', '1', '"'],
                     ['location', '6', '8'],
                     ['enterSubRule', '1'],
-                    ['enterDecision', '1'],
+                    ['enterDecision', '1', '0'],
                     ['LT', '1', '2', '5', '0', '1', '2', '"1'],
                     ['exitDecision', '1'],
                     ['enterAlt', '1'],
@@ -276,7 +289,7 @@ class T(testbase.ANTLRTest):
                     ['LT', '1', '2', '5', '0', '1', '2', '"1'],
                     ['consumeToken', '2', '5', '0', '1', '2', '"1'],
                     ['consumeHiddenToken', '3', '6', '99', '1', '3', '"'],
-                    ['enterDecision', '1'],
+                    ['enterDecision', '1', '0'],
                     ['LT', '1', '4', '4', '0', '1', '4', '"b'],
                     ['exitDecision', '1'],
                     ['enterAlt', '1'],
@@ -284,7 +297,7 @@ class T(testbase.ANTLRTest):
                     ['LT', '1', '4', '4', '0', '1', '4', '"b'],
                     ['consumeToken', '4', '4', '0', '1', '4', '"b'],
                     ['consumeHiddenToken', '5', '6', '99', '1', '5', '"'],
-                    ['enterDecision', '1'],
+                    ['enterDecision', '1', '0'],
                     ['LT', '1', '6', '4', '0', '1', '6', '"c'],
                     ['exitDecision', '1'],
                     ['enterAlt', '1'],
@@ -292,26 +305,26 @@ class T(testbase.ANTLRTest):
                     ['LT', '1', '6', '4', '0', '1', '6', '"c'],
                     ['consumeToken', '6', '4', '0', '1', '6', '"c'],
                     ['consumeHiddenToken', '7', '6', '99', '1', '7', '"'],
-                    ['enterDecision', '1'],
+                    ['enterDecision', '1', '0'],
                     ['LT', '1', '8', '5', '0', '1', '8', '"3'],
                     ['exitDecision', '1'],
                     ['enterAlt', '1'],
                     ['location', '6', '8'],
                     ['LT', '1', '8', '5', '0', '1', '8', '"3'],
                     ['consumeToken', '8', '5', '0', '1', '8', '"3'],
-                    ['enterDecision', '1'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
+                    ['enterDecision', '1', '0'],
+                    ['LT', '1', '-1', '-1', '0', '1', '9', '"<EOF>'],
                     ['exitDecision', '1'],
                     ['exitSubRule', '1'],
                     ['location', '6', '22'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                    ['consumeToken', '-1', '-1', '0', '0', '-1', '"'],
+                    ['LT', '1', '-1', '-1', '0', '1', '9', '"<EOF>'],
+                    ['LT', '1', '-1', '-1', '0', '1', '9', '"<EOF>'],
+                    ['consumeToken', '-1', '-1', '0', '1', '9', '"<EOF>'],
                     ['location', '6', '25'],
                     ['exitRule', 'T.g', 'a'],
                     ['terminate']]
 
-        self.assertEqual(debugger.events, expected)
+        self.assertListEqual(debugger.events, expected)
 
 
     def testClosureBlock(self):
@@ -343,7 +356,7 @@ class T(testbase.ANTLRTest):
                     ['consumeHiddenToken', '1', '6', '99', '1', '1', '"'],
                     ['location', '6', '8'],
                     ['enterSubRule', '1'],
-                    ['enterDecision', '1'],
+                    ['enterDecision', '1', '0'],
                     ['LT', '1', '2', '5', '0', '1', '2', '"1'],
                     ['exitDecision', '1'],
                     ['enterAlt', '1'],
@@ -351,7 +364,7 @@ class T(testbase.ANTLRTest):
                     ['LT', '1', '2', '5', '0', '1', '2', '"1'],
                     ['consumeToken', '2', '5', '0', '1', '2', '"1'],
                     ['consumeHiddenToken', '3', '6', '99', '1', '3', '"'],
-                    ['enterDecision', '1'],
+                    ['enterDecision', '1', '0'],
                     ['LT', '1', '4', '4', '0', '1', '4', '"b'],
                     ['exitDecision', '1'],
                     ['enterAlt', '1'],
@@ -359,7 +372,7 @@ class T(testbase.ANTLRTest):
                     ['LT', '1', '4', '4', '0', '1', '4', '"b'],
                     ['consumeToken', '4', '4', '0', '1', '4', '"b'],
                     ['consumeHiddenToken', '5', '6', '99', '1', '5', '"'],
-                    ['enterDecision', '1'],
+                    ['enterDecision', '1', '0'],
                     ['LT', '1', '6', '4', '0', '1', '6', '"c'],
                     ['exitDecision', '1'],
                     ['enterAlt', '1'],
@@ -367,26 +380,26 @@ class T(testbase.ANTLRTest):
                     ['LT', '1', '6', '4', '0', '1', '6', '"c'],
                     ['consumeToken', '6', '4', '0', '1', '6', '"c'],
                     ['consumeHiddenToken', '7', '6', '99', '1', '7', '"'],
-                    ['enterDecision', '1'],
+                    ['enterDecision', '1', '0'],
                     ['LT', '1', '8', '5', '0', '1', '8', '"3'],
                     ['exitDecision', '1'],
                     ['enterAlt', '1'],
                     ['location', '6', '8'],
                     ['LT', '1', '8', '5', '0', '1', '8', '"3'],
                     ['consumeToken', '8', '5', '0', '1', '8', '"3'],
-                    ['enterDecision', '1'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
+                    ['enterDecision', '1', '0'],
+                    ['LT', '1', '-1', '-1', '0', '1', '9', '"<EOF>'],
                     ['exitDecision', '1'],
                     ['exitSubRule', '1'],
                     ['location', '6', '22'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                    ['consumeToken', '-1', '-1', '0', '0', '-1', '"'],
+                    ['LT', '1', '-1', '-1', '0', '1', '9', '"<EOF>'],
+                    ['LT', '1', '-1', '-1', '0', '1', '9', '"<EOF>'],
+                    ['consumeToken', '-1', '-1', '0', '1', '9', '"<EOF>'],
                     ['location', '6', '25'],
                     ['exitRule', 'T.g', 'a'],
                     ['terminate']]
 
-        self.assertEqual(debugger.events, expected)
+        self.assertListEqual(debugger.events, expected)
 
 
     def testMismatchedSetException(self):
@@ -416,19 +429,19 @@ class T(testbase.ANTLRTest):
                     ['LT', '1', '0', '4', '0', '1', '0', '"a'],
                     ['consumeToken', '0', '4', '0', '1', '0', '"a'],
                     ['location', '6', '8'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                    ['exception', 'MismatchedSetException', '1', '0', '-1'],
-                    ['exception', 'MismatchedSetException', '1', '0', '-1'],
+                    ['LT', '1', '-1', '-1', '0', '1', '1', '"<EOF>'],
+                    ['LT', '1', '-1', '-1', '0', '1', '1', '"<EOF>'],
+                    ['LT', '1', '-1', '-1', '0', '1', '1', '"<EOF>'],
+                    ['exception', 'MismatchedSetException', '1', '1', '1'],
+                    ['exception', 'MismatchedSetException', '1', '1', '1'],
                     ['beginResync'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
+                    ['LT', '1', '-1', '-1', '0', '1', '1', '"<EOF>'],
                     ['endResync'],
                     ['location', '6', '24'],
                     ['exitRule', 'T.g', 'a'],
                     ['terminate']]
 
-        self.assertEqual(debugger.events, expected)
+        self.assertListEqual(debugger.events, expected)
 
 
     def testBlock(self):
@@ -462,7 +475,7 @@ class T(testbase.ANTLRTest):
                      ['consumeHiddenToken', '1', '6', '99', '1', '1', '"'],
                      ['location', '6', '8'],
                      ['enterSubRule', '1'],
-                     ['enterDecision', '1'],
+                     ['enterDecision', '1', '0'],
                      ['LT', '1', '2', '5', '0', '1', '2', '"1'],
                      ['exitDecision', '1'],
                      ['enterAlt', '2'],
@@ -478,14 +491,14 @@ class T(testbase.ANTLRTest):
                      ['exitRule', 'T.g', 'c'],
                      ['exitSubRule', '1'],
                      ['location', '6', '18'],
-                     ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                     ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                     ['consumeToken', '-1', '-1', '0', '0', '-1', '"'],
+                     ['LT', '1', '-1', '-1', '0', '1', '3', '"<EOF>'],
+                     ['LT', '1', '-1', '-1', '0', '1', '3', '"<EOF>'],
+                     ['consumeToken', '-1', '-1', '0', '1', '3', '"<EOF>'],
                      ['location', '6', '21'],
                      ['exitRule', 'T.g', 'a'],
                      ['terminate']]
 
-        self.assertEqual(debugger.events, expected)
+        self.assertListEqual(debugger.events, expected)
 
 
     def testNoViableAlt(self):
@@ -514,30 +527,30 @@ class T(testbase.ANTLRTest):
                      ['location', '6', '1'],
                      ['enterAlt', '1'],
                      ['location', '6', '5'],
-                     ['LT', '1', '0', '4', '0', '1', '0', '"a'],
-                     ['LT', '1', '0', '4', '0', '1', '0', '"a'],
-                     ['consumeToken', '0', '4', '0', '1', '0', '"a'],
+                     ['LT', '1', '0', '5', '0', '1', '0', '"a'],
+                     ['LT', '1', '0', '5', '0', '1', '0', '"a'],
+                     ['consumeToken', '0', '5', '0', '1', '0', '"a'],
                      ['consumeHiddenToken', '1', '7', '99', '1', '1', '"'],
                      ['location', '6', '8'],
                      ['enterSubRule', '1'],
-                     ['enterDecision', '1'],
-                     ['LT', '1', '2', '6', '0', '1', '2', '"!'],
-                     ['LT', '1', '2', '6', '0', '1', '2', '"!'],
-                     ['LT', '1', '2', '6', '0', '1', '2', '"!'],
+                     ['enterDecision', '1', '0'],
+                     ['LT', '1', '2', '4', '0', '1', '2', '"!'],
+                     ['LT', '1', '2', '4', '0', '1', '2', '"!'],
+                     ['LT', '1', '2', '4', '0', '1', '2', '"!'],
                      ['exception', 'NoViableAltException', '2', '1', '2'],
                      ['exitDecision', '1'],
                      ['exitSubRule', '1'],
                      ['exception', 'NoViableAltException', '2', '1', '2'],
                      ['beginResync'],
-                     ['LT', '1', '2', '6', '0', '1', '2', '"!'],
-                     ['consumeToken', '2', '6', '0', '1', '2', '"!'],
-                     ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
+                     ['LT', '1', '2', '4', '0', '1', '2', '"!'],
+                     ['consumeToken', '2', '4', '0', '1', '2', '"!'],
+                     ['LT', '1', '-1', '-1', '0', '1', '3', '"<EOF>'],
                      ['endResync'],
                      ['location', '6', '21'],
                      ['exitRule', 'T.g', 'a'],
                      ['terminate']]
 
-        self.assertEqual(debugger.events, expected)
+        self.assertListEqual(debugger.events, expected)
 
 
     def testRuleBlock(self):
@@ -563,7 +576,7 @@ class T(testbase.ANTLRTest):
         self.assertTrue(debugger.success)
         expected = [['enterRule', 'T.g', 'a'],
                     ['location', '6', '1'],
-                    ['enterDecision', '1'],
+                    ['enterDecision', '1', '0'],
                     ['LT', '1', '0', '5', '0', '1', '0', '"1'],
                     ['exitDecision', '1'],
                     ['enterAlt', '2'],
@@ -581,7 +594,7 @@ class T(testbase.ANTLRTest):
                     ['exitRule', 'T.g', 'a'],
                     ['terminate']]
 
-        self.assertEqual(debugger.events, expected)
+        self.assertListEqual(debugger.events, expected)
 
 
     def testRuleBlockSingleAlt(self):
@@ -621,7 +634,7 @@ class T(testbase.ANTLRTest):
                     ['exitRule', 'T.g', 'a'],
                     ['terminate']]
 
-        self.assertEqual(debugger.events, expected)
+        self.assertListEqual(debugger.events, expected)
 
 
     def testBlockSingleAlt(self):
@@ -663,7 +676,7 @@ class T(testbase.ANTLRTest):
                     ['exitRule', 'T.g', 'a'],
                     ['terminate']]
 
-        self.assertEqual(debugger.events, expected)
+        self.assertListEqual(debugger.events, expected)
 
 
     def testDFA(self):
@@ -693,12 +706,12 @@ class T(testbase.ANTLRTest):
                     ['enterAlt', '1'],
                     ['location', '6', '5'],
                     ['enterSubRule', '1'],
-                    ['enterDecision', '1'],
+                    ['enterDecision', '1', '0'],
                     ['mark', '0'],
-                    ['LT', '1', '0', '4', '0', '1', '0', '"a'],
-                    ['consumeToken', '0', '4', '0', '1', '0', '"a'],
-                    ['LT', '1', '1', '6', '0', '1', '1', '"!'],
-                    ['consumeToken', '1', '6', '0', '1', '1', '"!'],
+                    ['LT', '1', '0', '5', '0', '1', '0', '"a'],
+                    ['consumeToken', '0', '5', '0', '1', '0', '"a'],
+                    ['LT', '1', '1', '4', '0', '1', '1', '"!'],
+                    ['consumeToken', '1', '4', '0', '1', '1', '"!'],
                     ['rewind', '0'],
                     ['exitDecision', '1'],
                     ['enterAlt', '2'],
@@ -708,34 +721,34 @@ class T(testbase.ANTLRTest):
                     ['enterAlt', '1'],
                     ['location', '8', '5'],
                     ['enterSubRule', '3'],
-                    ['enterDecision', '3'],
-                    ['LT', '1', '0', '4', '0', '1', '0', '"a'],
+                    ['enterDecision', '3', '0'],
+                    ['LT', '1', '0', '5', '0', '1', '0', '"a'],
                     ['exitDecision', '3'],
                     ['enterAlt', '1'],
                     ['location', '8', '5'],
-                    ['LT', '1', '0', '4', '0', '1', '0', '"a'],
-                    ['LT', '1', '0', '4', '0', '1', '0', '"a'],
-                    ['consumeToken', '0', '4', '0', '1', '0', '"a'],
-                    ['enterDecision', '3'],
-                    ['LT', '1', '1', '6', '0', '1', '1', '"!'],
+                    ['LT', '1', '0', '5', '0', '1', '0', '"a'],
+                    ['LT', '1', '0', '5', '0', '1', '0', '"a'],
+                    ['consumeToken', '0', '5', '0', '1', '0', '"a'],
+                    ['enterDecision', '3', '0'],
+                    ['LT', '1', '1', '4', '0', '1', '1', '"!'],
                     ['exitDecision', '3'],
                     ['exitSubRule', '3'],
                     ['location', '8', '9'],
-                    ['LT', '1', '1', '6', '0', '1', '1', '"!'],
-                    ['LT', '1', '1', '6', '0', '1', '1', '"!'],
-                    ['consumeToken', '1', '6', '0', '1', '1', '"!'],
+                    ['LT', '1', '1', '4', '0', '1', '1', '"!'],
+                    ['LT', '1', '1', '4', '0', '1', '1', '"!'],
+                    ['consumeToken', '1', '4', '0', '1', '1', '"!'],
                     ['location', '8', '13'],
                     ['exitRule', 'T.g', 'c'],
                     ['exitSubRule', '1'],
                     ['location', '6', '15'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                    ['LT', '1', '-1', '-1', '0', '0', '-1', '"'],
-                    ['consumeToken', '-1', '-1', '0', '0', '-1', '"'],
+                    ['LT', '1', '-1', '-1', '0', '1', '2', '"<EOF>'],
+                    ['LT', '1', '-1', '-1', '0', '1', '2', '"<EOF>'],
+                    ['consumeToken', '-1', '-1', '0', '1', '2', '"<EOF>'],
                     ['location', '6', '18'],
                     ['exitRule', 'T.g', 'a'],
                     ['terminate']]
 
-        self.assertEqual(debugger.events, expected)
+        self.assertListEqual(debugger.events, expected)
 
 
     def testBasicAST(self):

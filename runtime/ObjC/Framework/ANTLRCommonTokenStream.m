@@ -53,7 +53,7 @@
 - (id) init
 {
 	if ((self = [super init]) != nil) {
-		channelOverride = [[NSMutableDictionary dictionaryWithCapacity:100] retain];
+		channelOverride = [[AMutableDictionary dictionaryWithCapacity:100] retain];
 		channel = ANTLRTokenChannelDefault;
 	}
 	return self;
@@ -62,7 +62,7 @@
 - (id) initWithTokenSource:(id<ANTLRTokenSource>)theTokenSource
 {
 	if ((self = [super initWithTokenSource:theTokenSource]) != nil) {
-		channelOverride = [[NSMutableDictionary dictionaryWithCapacity:100] retain];
+		channelOverride = [[AMutableDictionary dictionaryWithCapacity:100] retain];
 		channel = ANTLRTokenChannelDefault;
 	}
 	return self;
@@ -71,7 +71,7 @@
 - (id) initWithTokenSource:(id<ANTLRTokenSource>)theTokenSource Channel:(NSUInteger)aChannel
 {
 	if ((self = [super initWithTokenSource:theTokenSource]) != nil) {
-		channelOverride = [[NSMutableDictionary dictionaryWithCapacity:100] retain];
+		channelOverride = [[AMutableDictionary dictionaryWithCapacity:100] retain];
 		channel = aChannel;
 	}
 	return self;
@@ -79,21 +79,24 @@
 
 - (void) dealloc
 {
-	[channelOverride release];
-	[tokens release];
+#ifdef DEBUG_DEALLOC
+    NSLog( @"called dealloc in ANTLRCommonTokenStream" );
+#endif
+	if ( channelOverride ) [channelOverride release];
+	if ( tokens ) [tokens release];
 	[self setTokenSource:nil];
 	[super dealloc];
 }
 
-/** Always leave p on an on-channel token. */
+/** Always leave index on an on-channel token. */
 - (void) consume
 {
-    if (p == -1) [self setup];
-    p++;
-    [self sync:p];
-    while ( [[tokens objectAtIndex:p] getChannel] != channel ) {
-		p++;
-		[self sync:p];
+    if (index == -1) [self setup];
+    index++;
+    [self sync:index];
+    while ( ((ANTLRCommonToken *)[tokens objectAtIndex:index]).channel != channel ) {
+		index++;
+		[self sync:index];
 	}
 }
 
@@ -101,10 +104,10 @@
 
 - (id<ANTLRToken>) LB:(NSInteger)k
 {
-	if ( k == 0 || (p-k) < 0 ) {
+	if ( k == 0 || (index-k) < 0 ) {
 		return nil;
 	}
-	int i = p;
+	int i = index;
 	int n = 1;
     // find k good tokens looking backwards
 	while ( n <= k ) {
@@ -119,10 +122,10 @@
 
 - (id<ANTLRToken>) LT:(NSInteger)k
 {
-	if ( p == -1 ) [self setup];
+	if ( index == -1 ) [self setup];
 	if ( k == 0 ) return nil;
 	if ( k < 0 ) return [self LB:-k];
-	int i = p;
+	int i = index;
 	int n = 1;
 	while ( n < k ) {
 		i = [self skipOffChannelTokens:i+1];
@@ -131,7 +134,7 @@
 //	if ( i >= (NSInteger)[tokens count] ) {
 //		return [ANTLRCommonToken eofToken];
 //	}
-    if (i > range) range = i;
+    if ( i > range ) range = i;
 	return [tokens objectAtIndex:i];
 }
 
@@ -140,7 +143,7 @@
 - (NSInteger) skipOffChannelTokens:(NSInteger) idx
 {
     [self sync:idx];
-	while ( [[tokens objectAtIndex:idx] getChannel] != channel ) {
+	while ( ((ANTLRCommonToken *)[tokens objectAtIndex:idx]).channel != channel ) {
 		idx++;
         [self sync:idx];
 	}
@@ -149,7 +152,7 @@
 
 - (NSInteger) skipOffChannelTokensReverse:(NSInteger) i
 {
-	while ( i >= 0 && [(id<ANTLRToken>)[tokens objectAtIndex:i] getChannel] != channel ) {
+	while ( i >= 0 && ((ANTLRCommonToken *)[tokens objectAtIndex:i]).channel != channel ) {
 		i--;
 	}
 	return i;
@@ -157,15 +160,15 @@
 
 - (void) setup
 {
-    p = 0;
+    index = 0;
     [self sync:0];
     int i = 0;
-    while ( [((id<ANTLRToken>)[tokens objectAtIndex:i]) getChannel] != channel ) {
+    while ( ((ANTLRCommonToken *)[tokens objectAtIndex:i]).channel != channel ) {
         i++;
         [self sync:i];
     }
-	// leave p pointing at first token on channel
-    p = i;
+	// leave index pointing at first token on channel
+    index = i;
 }
 
 - (NSInteger) getNumberOfOnChannelTokens
@@ -173,10 +176,10 @@
     NSInteger n = 0;
     [self fill];
     for( int i = 0; i < [tokens count]; i++ ) {
-        id<ANTLRToken> t = [tokens objectAtIndex:i];
-        if ( [t getChannel] == channel )
+        ANTLRCommonToken *t = [tokens objectAtIndex:i];
+        if ( t.channel == channel )
             n++;
-        if ( [t getType] == ANTLRTokenTypeEOF )
+        if ( t.type == ANTLRTokenTypeEOF )
             break;
     }
     return n;
@@ -201,7 +204,7 @@
     return copy;
 }
 
-- (NSUInteger)getChannel
+- (NSUInteger)channel
 {
     return channel;
 }
@@ -211,12 +214,12 @@
     channel = aChannel;
 }
 
-- (NSMutableDictionary *)getChannelOverride
+- (AMutableDictionary *)channelOverride
 {
     return channelOverride;
 }
 
-- (void)setChannelOverride:(NSMutableDictionary *)anOverride
+- (void)setChannelOverride:(AMutableDictionary *)anOverride
 {
     channelOverride = anOverride;
 }
@@ -240,19 +243,18 @@
 {
 	unsigned int startIndex = aRange.location;
 	unsigned int stopIndex = aRange.location+aRange.length;
-	if ( p == -1 ) {
+	if ( index == -1 ) {
 		[self setup];
 	}
 	if (stopIndex >= [tokens count]) {
 		stopIndex = [tokens count] - 1;
 	}
-	NSMutableArray *filteredTokens = [NSMutableArray arrayWithCapacity:100];
+	AMutableArray *filteredTokens = [AMutableArray arrayWithCapacity:100];
 	unsigned int i=0;
 	for (i = startIndex; i<=stopIndex; i++) {
 		id<ANTLRToken> token = [tokens objectAtIndex:i];
-		if (aBitSet == nil || [aBitSet member:[token getType]]) {
+		if (aBitSet == nil || [aBitSet member:token.type]) {
 			[filteredTokens addObject:token];
-            [token retain];
 		}
 	}
 	if ([filteredTokens count]) {
@@ -290,11 +292,6 @@
 	return [tokens count];
 }
 
-- (NSInteger) getIndex
-{
-	return p;
-}
-
 - (void) rewind
 {
 	[self seek:lastMarker];
@@ -305,15 +302,15 @@
 	[self seek:marker];
 }
 
-- (void) seek:(NSInteger)index
+- (void) seek:(NSInteger)anIndex
 {
-	p = index;
+	index = anIndex;
 }
 #pragma mark toString routines
 
 - (NSString *) toString
 {
-	if ( p == -1 ) {
+	if ( index == -1 ) {
 		[self setup];
 	}
 	return [self toStringFromStart:0 ToEnd:[tokens count]];
@@ -327,7 +324,7 @@
     if ( startIdx < 0 || stopIdx < 0 ) {
         return nil;
     }
-    if ( p == -1 ) {
+    if ( index == -1 ) {
         [self setup];
     }
     if ( stopIdx >= [tokens count] ) {
@@ -336,7 +333,7 @@
     stringBuffer = [NSMutableString stringWithCapacity:30];
     for (int i = startIdx; i <= stopIdx; i++) {
         t = (id<ANTLRToken>)[tokens objectAtIndex:i];
-        [stringBuffer appendString:[t getText]];
+        [stringBuffer appendString:[t text]];
     }
     return stringBuffer;
 }

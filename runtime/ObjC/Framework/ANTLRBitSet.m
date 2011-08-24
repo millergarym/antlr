@@ -47,7 +47,7 @@
     return [[ANTLRBitSet alloc] initWithNBits:nbits];
 }
 
-+ (ANTLRBitSet *) newANTLRBitSetWithArray:(NSMutableArray *)types
++ (ANTLRBitSet *) newANTLRBitSetWithArray:(AMutableArray *)types
 {
     return [[ANTLRBitSet alloc] initWithArrayOfBits:types];
 }
@@ -178,8 +178,11 @@
 	return self;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
+#ifdef DEBUG_DEALLOC
+    NSLog( @"called dealloc in ANTLRBitSet" );
+#endif
 	CFRelease(bitVector);
 	[super dealloc];
 }

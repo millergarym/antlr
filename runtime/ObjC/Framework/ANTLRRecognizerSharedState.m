@@ -67,7 +67,7 @@
 {
     ANTLRHashRule *aHashRule;
 	if ((self = [super init]) != nil ) {
-        following = [NSMutableArray arrayWithCapacity:10];
+        following = [[AMutableArray arrayWithCapacity:10] retain];
         _fsp = -1;
         errorRecovery = NO;			// are we recovering?
         lastErrorIndex = -1;
@@ -98,7 +98,7 @@
 {
     ANTLRHashRule *aHashRule;
 	if ((self = [super init]) != nil ) {
-        following = [NSMutableArray arrayWithCapacity:10];
+        following = [[AMutableArray arrayWithCapacity:10] retain];
         _fsp = -1;
         errorRecovery = NO;			// are we recovering?
         lastErrorIndex = -1;
@@ -107,7 +107,7 @@
         backtracking = 0;			// the level of backtracking
         tokenStartCharIndex = -1;
         tokenStartLine = 0;
-		ruleMemo = [ANTLRRuleStack newANTLRRuleStack:aLen];
+		ruleMemo = [[ANTLRRuleStack newANTLRRuleStack:aLen] retain];
         for (int i = 0; i < aLen; i++ ) {
             aHashRule = [[ANTLRHashRule newANTLRHashRuleWithLen:17] retain];
             [ruleMemo addObject:aHashRule];
@@ -139,7 +139,7 @@
     backtracking = aState.backtracking;
     if ( aState.ruleMemo == nil ) {
         int cnt = 200;
-        ruleMemo = [ANTLRRuleStack newANTLRRuleStack:cnt];
+        ruleMemo = [[ANTLRRuleStack newANTLRRuleStack:cnt] retain];
         for (int i = 0; i < cnt; i++ ) {
             aHashRule = [[ANTLRHashRule newANTLRHashRuleWithLen:17] retain];
             [ruleMemo addObject:aHashRule];
@@ -169,8 +169,12 @@
 
 - (void) dealloc
 {
-	[following release];
-	[ruleMemo release];
+#ifdef DEBUG_DEALLOC
+    NSLog( @"called dealloc in ANTLRRecognizerSharedState" );
+#endif
+    if ( token ) [token release];
+	if ( following ) [following release];
+	if ( ruleMemo ) [ruleMemo release];
 	[super dealloc];
 }
 
@@ -186,12 +190,12 @@
 {
     if (token != aToken) {
         [aToken retain];
-        [token release];
+        if ( token ) [token release];
         token = aToken;
     }
 }
 
-- (NSUInteger) getChannel
+- (NSUInteger)channel
 {
     return channel;
 }
@@ -211,7 +215,7 @@
     tokenStartLine = theTokenStartLine;
 }
 
-- (NSUInteger) getCharPositionInLine
+- (NSUInteger) charPositionInLine
 {
     return tokenStartCharPositionInLine;
 }
@@ -237,13 +241,17 @@
 	NSLog(@"%@", e.name);
 }
 
-- (NSMutableArray *) getFollowing
+- (AMutableArray *) getFollowing
 {
 	return following;
 }
 
-- (void)setFollowing:(NSMutableArray *)aFollow
+- (void)setFollowing:(AMutableArray *)aFollow
 {
+    if ( following != aFollow ) {
+        if ( following ) [following release];
+        [aFollow retain];
+    }
     following = aFollow;
 }
 
@@ -254,6 +262,10 @@
 
 - (void)setRuleMemo:(ANTLRRuleStack *)aRuleMemo
 {
+    if ( ruleMemo != aRuleMemo ) {
+        if ( ruleMemo ) [ruleMemo release];
+        [aRuleMemo retain];
+    }
     ruleMemo = aRuleMemo;
 }
 

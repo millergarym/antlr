@@ -34,7 +34,7 @@
 	id<ANTLRTreeNodeStream> input;
 }
 
-@property (retain, getter=getInput, setter=setInput:) id<ANTLRTreeNodeStream> input;
+@property (retain, getter=input, setter=setInput:) id<ANTLRTreeNodeStream> input;
 
 + (id) newANTLRTreeParser:(id<ANTLRTreeNodeStream>)anInput;
 + (id) newANTLRTreeParser:(id<ANTLRTreeNodeStream>)anInput State:(ANTLRRecognizerSharedState *)state;
@@ -44,7 +44,7 @@
                 State:(ANTLRRecognizerSharedState *)state;
 
 
-- (id<ANTLRTreeNodeStream>)getInput;
+- (id<ANTLRTreeNodeStream>)input;
 - (void) setInput:(id<ANTLRTreeNodeStream>)anInput;
 
 - (void) setTreeNodeStream:(id<ANTLRTreeNodeStream>) anInput;
@@ -79,11 +79,9 @@
  */
 - (NSString *)getErrorHeader:(ANTLRRecognitionException *)e;
 
-- (NSString *)getErrorMessage:(ANTLRRecognitionException *)e TokenNames:(NSMutableArray *) tokenNames;
+- (NSString *)getErrorMessage:(ANTLRRecognitionException *)e TokenNames:(AMutableArray *) tokenNames;
 
 - (void) traceIn:(NSString *)ruleName Index:(NSInteger)ruleIndex;
 - (void) traceOut:(NSString *)ruleName Index:(NSInteger)ruleIndex;
-
-
 
 @end

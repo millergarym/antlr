@@ -65,6 +65,9 @@
 
 - (void) dealloc
 {
+#ifdef DEBUG_DEALLOC
+    NSLog( @"called dealloc in ANTLRParser" );
+#endif
 	[self setInput:nil];
 	[super dealloc];
 }
@@ -72,7 +75,7 @@
 //---------------------------------------------------------- 
 //  input 
 //---------------------------------------------------------- 
-- (id<ANTLRTokenStream>) getInput
+- (id<ANTLRTokenStream>) input
 {
     return input; 
 }
@@ -80,10 +83,10 @@
 - (void) setInput: (id<ANTLRTokenStream>) anInput
 {
     if (input != anInput) {
+        if ( input ) [input release];
         [anInput retain];
-        [input release];
-        input = anInput;
     }
+    input = anInput;
 }
 
 - (id) getCurrentInputSymbol:(id<ANTLRTokenStream>)anInput
@@ -104,11 +107,11 @@
         tokenText = [NSString stringWithFormat:@"<missing %@>\n",[[ANTLRBaseRecognizer getTokenNames] objectAtIndex:expectedTokenType]];
     ANTLRCommonToken *t = [[ANTLRCommonToken newToken:expectedTokenType Text:tokenText] retain];
     ANTLRCommonToken *current = [anInput LT:1];
-    if ( [current getType] == ANTLRTokenTypeEOF ) {
+    if ( current.type == ANTLRTokenTypeEOF ) {
         current = [anInput LT:-1];
     }
-    t.line = [current getLine];
-    t.charPositionInLine = [current getCharPositionInLine];
+    t.line = current.line;
+    t.charPositionInLine = current.charPositionInLine;
     t.channel = ANTLRTokenChannelDefault;
     return t;
 }

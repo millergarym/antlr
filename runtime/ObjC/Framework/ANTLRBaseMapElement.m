@@ -57,10 +57,19 @@
 - (id) initWithAnIndex:(NSNumber *)aNumber
 {
     if ((self = [super init]) != nil ) {
-        [aNumber retain];
         index = aNumber;
+        if ( index ) [index retain];
     }
     return (self);
+}
+
+- (void) dealloc
+{
+#ifdef DEBUG_DEALLOC
+    NSLog( @"called dealloc in ANTLRBaseMapElement" );
+#endif
+    if ( index ) [index release];
+    [super dealloc];
 }
 
 - (id) copyWithZone:(NSZone *)aZone
@@ -70,17 +79,6 @@
     copy = [super copyWithZone:aZone];
     copy.index = index;
     return( copy );
-}
-
-- (id)getIndex
-{
-    return index;
-}
-
-- (void)setIndex:(id)anIdx
-{
-    [anIdx retain];
-    index = anIdx;
 }
 
 - (NSInteger)count

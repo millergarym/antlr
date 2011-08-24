@@ -100,34 +100,34 @@ static ANTLRCommonToken *INVALID_TOKEN;
 // return the singleton EOF Token 
 + (id<ANTLRToken>) eofToken
 {
-	if (EOF_TOKEN == nil) {
-		EOF_TOKEN = [[ANTLRCommonToken newToken:ANTLRTokenTypeEOF Text:@"EOF"] retain];
-	}
-	return EOF_TOKEN;
+    if (EOF_TOKEN == nil) {
+        EOF_TOKEN = [[ANTLRCommonToken newToken:ANTLRTokenTypeEOF Text:@"EOF"] retain];
+    }
+    return EOF_TOKEN;
 }
 
 // return the singleton skip Token 
 + (id<ANTLRToken>) skipToken
 {
-	if (SKIP_TOKEN == nil) {
-		SKIP_TOKEN = [[ANTLRCommonToken newToken:ANTLRTokenTypeInvalid Text:@"Skip"] retain];
-	}
-	return SKIP_TOKEN;
+    if (SKIP_TOKEN == nil) {
+        SKIP_TOKEN = [[ANTLRCommonToken newToken:ANTLRTokenTypeInvalid Text:@"Skip"] retain];
+    }
+    return SKIP_TOKEN;
 }
 
 // return the singleton skip Token 
 + (id<ANTLRToken>) invalidToken
 {
-	if (INVALID_TOKEN == nil) {
-		INVALID_TOKEN = [[ANTLRCommonToken newToken:ANTLRTokenTypeInvalid Text:@"Invalid"] retain];
-	}
-	return SKIP_TOKEN;
+    if (INVALID_TOKEN == nil) {
+        INVALID_TOKEN = [[ANTLRCommonToken newToken:ANTLRTokenTypeInvalid Text:@"Invalid"] retain];
+    }
+    return SKIP_TOKEN;
 }
 
 // the default channel for this class of Tokens
 + (ANTLRTokenChannel) defaultChannel
 {
-	return ANTLRTokenChannelDefault;
+    return ANTLRTokenChannelDefault;
 }
 
 - (id) init
@@ -151,6 +151,7 @@ static ANTLRCommonToken *INVALID_TOKEN;
 {
     if ((self = [super init]) != nil) {
         input = anInput;
+        if ( input ) [input retain];
         type = aTType;
         channel = aChannel;
         startIndex = aStart;
@@ -159,6 +160,7 @@ static ANTLRCommonToken *INVALID_TOKEN;
             text = @"EOF";
         else
             text = [input substringWithRange:NSMakeRange(startIndex, (stopIndex-startIndex)+1)];
+        if ( text ) [text retain];
     }
     return self;
 }
@@ -167,41 +169,47 @@ static ANTLRCommonToken *INVALID_TOKEN;
 {
     if ((self = [super init]) != nil) {
         text = [NSString stringWithString:oldToken.text];
+        if ( text ) [text retain];
         type = oldToken.type;
         line = oldToken.line;
         index = oldToken.index;
         charPositionInLine = oldToken.charPositionInLine;
         channel = oldToken.channel;
         input = oldToken.input;
+        if ( input ) [input retain];
         if ( [oldToken isKindOfClass:[ANTLRCommonToken class]] ) {
             startIndex = oldToken.startIndex;
             stopIndex = oldToken.stopIndex;
         }
     }
-	return self;
+    return self;
 }
 
 - (id) initWithType:(ANTLRTokenType)aTType
 {
-	if ((self = [super init]) != nil) {
+    if ((self = [super init]) != nil) {
         self.type = aTType;
-	}
-	return self;
+    }
+    return self;
 }
 
 - (id) initWithType:(ANTLRTokenType)aTType Text:(NSString *)tokenText
 {
-	if ((self = [super init]) != nil) {
+    if ((self = [super init]) != nil) {
         self.type = aTType;
-        self.text = tokenText;
-	}
-	return self;
+        self.text = [NSString stringWithString:tokenText];
+        if ( text ) [text retain];
+    }
+    return self;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-    [self setInput:nil];
-    [self setText:nil];
+#ifdef DEBUG_DEALLOC
+    NSLog( @"called dealloc in ANTLRCommonToken" );
+#endif
+    if ( input ) [input release];
+    if ( text ) [text release];
     [super dealloc];
 }
 
@@ -226,25 +234,51 @@ static ANTLRCommonToken *INVALID_TOKEN;
 
 
 //---------------------------------------------------------- 
-//  text 
+//  charPositionInLine 
 //---------------------------------------------------------- 
-- (NSString *) getText
+- (NSUInteger) charPositionInLine
 {
-	if (text != nil) {
-		return text;
-	}
-	if (input == nil) {
-		return nil;
-	}
-	return [input substringWithRange:NSMakeRange(startIndex, (stopIndex-startIndex)+1)];
+    return charPositionInLine;
 }
 
-- (void) setText: (NSString *) aText
+- (void) setCharPositionInLine:(NSUInteger)aCharPositionInLine
+{
+    charPositionInLine = aCharPositionInLine;
+}
+
+//---------------------------------------------------------- 
+//  line 
+//---------------------------------------------------------- 
+- (NSUInteger) line
+{
+    return line;
+}
+
+- (void) setLine:(NSUInteger)aLine
+{
+    line = aLine;
+}
+
+//---------------------------------------------------------- 
+//  text 
+//---------------------------------------------------------- 
+- (NSString *) text
+{
+    if (text != nil) {
+        return text;
+    }
+    if (input == nil) {
+        return nil;
+    }
+    return [input substringWithRange:NSMakeRange(startIndex, (stopIndex-startIndex)+1)];
+}
+
+- (void) setText:(NSString *)aText
 {
     if (text != aText) {
-        [aText retain];
-        [text release];
+        if ( text ) [text release];
         text = aText;
+        [text retain];
     }
 }
 
@@ -252,51 +286,25 @@ static ANTLRCommonToken *INVALID_TOKEN;
 //---------------------------------------------------------- 
 //  type 
 //---------------------------------------------------------- 
-- (NSInteger) getType
+- (NSInteger)type
 {
     return type;
 }
 
-- (void) setType: (NSInteger) aType
+- (void) setType:(NSInteger)aType
 {
     type = aType;
 }
 
 //---------------------------------------------------------- 
-//  line 
-//---------------------------------------------------------- 
-- (NSUInteger) getLine
-{
-    return line;
-}
-
-- (void) setLine: (NSUInteger) aLine
-{
-    line = aLine;
-}
-
-//---------------------------------------------------------- 
-//  charPositionInLine 
-//---------------------------------------------------------- 
-- (NSUInteger) getCharPositionInLine
-{
-    return charPositionInLine;
-}
-
-- (void) setCharPositionInLine: (NSUInteger) aCharPositionInLine
-{
-    charPositionInLine = aCharPositionInLine;
-}
-
-//---------------------------------------------------------- 
 //  channel 
 //---------------------------------------------------------- 
-- (NSUInteger) getChannel
+- (NSUInteger)channel
 {
     return channel;
 }
 
-- (void) setChannel: (NSUInteger) aChannel
+- (void) setChannel:(NSUInteger)aChannel
 {
     channel = aChannel;
 }
@@ -305,7 +313,7 @@ static ANTLRCommonToken *INVALID_TOKEN;
 //---------------------------------------------------------- 
 //  input 
 //---------------------------------------------------------- 
-- (id<ANTLRCharStream>) getInput
+- (id<ANTLRCharStream>) input
 {
     return input; 
 }
@@ -313,10 +321,10 @@ static ANTLRCommonToken *INVALID_TOKEN;
 - (void) setInput: (id<ANTLRCharStream>) anInput
 {
     if (input != anInput) {
+        if ( input ) [input release];
         [anInput retain];
-        [input release];
-        input = anInput;
     }
+    input = anInput;
 }
 
 
@@ -370,15 +378,15 @@ static ANTLRCommonToken *INVALID_TOKEN;
     if ( channel > 0 ) {
         channelStr = [NSString stringWithFormat:@",channel=%d\n", channel];
     }
-	if ([self getText] != nil) {
-		txtString = [NSMutableString stringWithString:[self getText]];
-		[txtString replaceOccurrencesOfString:@"\n" withString:@"\\\\n" options:NSAnchoredSearch range:NSMakeRange(0, [txtString length])];
-		[txtString replaceOccurrencesOfString:@"\r" withString:@"\\\\r" options:NSAnchoredSearch range:NSMakeRange(0, [txtString length])];
-		[txtString replaceOccurrencesOfString:@"\t" withString:@"\\\\t" options:NSAnchoredSearch range:NSMakeRange(0, [txtString length])];
-	} else {
-		txtString = [NSMutableString stringWithString:@"<no text>"];
+    if ([self text] != nil) {
+        txtString = [NSMutableString stringWithString:[self text]];
+        [txtString replaceOccurrencesOfString:@"\n" withString:@"\\\\n" options:NSAnchoredSearch range:NSMakeRange(0, [txtString length])];
+        [txtString replaceOccurrencesOfString:@"\r" withString:@"\\\\r" options:NSAnchoredSearch range:NSMakeRange(0, [txtString length])];
+        [txtString replaceOccurrencesOfString:@"\t" withString:@"\\\\t" options:NSAnchoredSearch range:NSMakeRange(0, [txtString length])];
+    } else {
+        txtString = [NSMutableString stringWithString:@"<no text>"];
     }
-	return [NSString stringWithFormat:@"[@%d, %d:%d='%@',<%d>%@,%d:%d]", index, startIndex, stopIndex, txtString, type, channelStr, line, charPositionInLine];
+    return [NSString stringWithFormat:@"[@%d, %d:%d='%@',<%d>%@,%d:%d]", index, startIndex, stopIndex, txtString, type, channelStr, line, charPositionInLine];
 }
 
 - (NSString *)toString

@@ -32,10 +32,11 @@
 #import <Cocoa/Cocoa.h>
 #import "ANTLRBaseTree.h"
 #import "ANTLRCommonToken.h"
+#import "AMutableArray.h"
 
 @interface ANTLRParseTree : ANTLRBaseTree <ANTLRBaseTree> {
-	id<ANTLRToken> payload;
-	NSMutableArray *hiddenTokens;
+	__strong id<ANTLRToken> payload;
+	__strong AMutableArray *hiddenTokens;
 }
 /** A record of the rules used to match a token sequence.  The tokens
  *  end up as the leaves of this tree and rule nodes are the interior nodes.
@@ -46,17 +47,18 @@
 - (id)initWithLabel:(id<ANTLRToken>)label;
 
 - (id<ANTLRBaseTree>)dupNode;
-- (NSInteger)getType;
-- (NSString *)getText;
+- (NSInteger)type;
+- (NSString *)text;
 - (NSInteger)getTokenStartIndex;
 - (void)setTokenStartIndex:(NSInteger)index;
 - (NSInteger)getTokenStopIndex;
 - (void)setTokenStopIndex:(NSInteger)index;
+- (NSString *)description;
 - (NSString *)toString;
 - (NSString *)toStringWithHiddenTokens;
 - (NSString *)toInputString;
 - (void)_toStringLeaves:(NSMutableString *)buf;
 
 @property (retain) id<ANTLRToken> payload;
-@property (retain) NSMutableArray *hiddenTokens;
+@property (retain) AMutableArray *hiddenTokens;
 @end

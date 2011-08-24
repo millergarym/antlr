@@ -44,30 +44,35 @@
 
 +(ANTLRBaseStack *)newANTLRBaseStack
 {
-    return [[[ANTLRBaseStack alloc] init] retain];
+    return [[ANTLRBaseStack alloc] init];
 }
 
 +(ANTLRBaseStack *)newANTLRBaseStackWithLen:(NSInteger)cnt
 {
-    return [[[ANTLRBaseStack alloc] initWithLen:cnt] retain];
+    return [[ANTLRBaseStack alloc] initWithLen:cnt];
 }
 
 -(id)init
 {
-	if ((self = [super initWithLen:HASHSIZE]) != nil) {
+	self = [super initWithLen:HASHSIZE];
+	if ( self != nil ) {
 	}
     return( self );
 }
 
 -(id)initWithLen:(NSInteger)cnt
 {
-	if ((self = [super initWithLen:cnt]) != nil) {
+	self = [super initWithLen:cnt];
+    if ( self != nil ) {
 	}
     return( self );
 }
 
--(void)dealloc
+- (void)dealloc
 {
+#ifdef DEBUG_DEALLOC
+    NSLog( @"called dealloc in ANTLRBaseStack" );
+#endif
 	[super dealloc];
 }
 
@@ -79,9 +84,9 @@
     return copy;
 }
 
-- (NSInteger)count
+- (NSUInteger)count
 {
-    NSInteger aCnt = 0;
+    NSUInteger aCnt = 0;
     
     for (int i = 0; i < BuffSize; i++) {
         if (ptrBuffer[i] != nil) {
@@ -91,7 +96,7 @@
     return aCnt;
 }
 
-- (NSInteger) size
+- (NSUInteger) size
 {
     return BuffSize;
 }
@@ -107,7 +112,7 @@
             while ( tmp ) {
                 rtmp = tmp;
                 tmp = [tmp getfNext];
-                [rtmp dealloc];
+                [rtmp release];
             }
         }
     }

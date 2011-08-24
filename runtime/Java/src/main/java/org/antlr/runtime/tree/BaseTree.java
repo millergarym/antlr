@@ -44,7 +44,7 @@ public abstract class BaseTree implements Tree {
 
 	/** Create a new node from an existing node does nothing for BaseTree
 	 *  as there are no fields other than the children list, which cannot
-	 *  be copied as the children are not considered part of this node. 
+	 *  be copied as the children are not considered part of this node.
 	 */
 	public BaseTree(Tree node) {
 	}
@@ -69,7 +69,7 @@ public abstract class BaseTree implements Tree {
 			if ( t.getType()==type ) {
 				return t;
 			}
-		}	
+		}
 		return null;
 	}
 
@@ -150,7 +150,19 @@ public abstract class BaseTree implements Tree {
 		t.setParent(this);
 		t.setChildIndex(i);
 	}
-	
+
+	/** Insert child t at child position i (0..n-1) by shifting children
+		i+1..n-1 to the right one position. Set parent / indexes properly
+	 	but does NOT collapse nil-rooted t's that come in here like addChild.
+	 */
+	public void insertChild(int i, Object t) {
+		if ( children==null ) return;
+		children.add(i, t);
+		// walk others to increment their child indexes
+		// set index, parent of this one too
+		this.freshenParentAndChildIndexes(i);
+	}
+
 	public Object deleteChild(int i) {
 		if ( children==null ) {
 			return null;
@@ -247,6 +259,20 @@ public abstract class BaseTree implements Tree {
 			Tree child = (Tree)getChild(c);
 			child.setChildIndex(c);
 			child.setParent(this);
+		}
+	}
+
+	public void freshenParentAndChildIndexesDeeply() {
+		freshenParentAndChildIndexesDeeply(0);
+	}
+
+	public void freshenParentAndChildIndexesDeeply(int offset) {
+		int n = getChildCount();
+		for (int c = offset; c < n; c++) {
+			BaseTree child = (BaseTree)getChild(c);
+			child.setChildIndex(c);
+			child.setParent(this);
+			child.freshenParentAndChildIndexesDeeply();
 		}
 	}
 

@@ -50,6 +50,7 @@ namespace Antlr.Runtime.Debug
     public class Profiler : BlankDebugEventListener
     {
         public static readonly string DataSeparator = "\t";
+        public static readonly string NewLine = Environment.NewLine;
 
         internal static bool dump = false;
 
@@ -70,7 +71,7 @@ namespace Antlr.Runtime.Debug
         protected int ruleLevel = 0;
         //protected int decisionLevel = 0;
         protected IToken lastRealTokenTouchedInDecision;
-        protected HashSet<string> uniqueRules = new HashSet<string>();
+        protected Dictionary<string, bool> uniqueRules = new Dictionary<string, bool>();
         protected Stack<string> currentGrammarFileName = new Stack<string>();
         protected Stack<string> currentRuleName = new Stack<string>();
         protected Stack<int> currentLine = new Stack<int>();
@@ -102,7 +103,7 @@ namespace Antlr.Runtime.Debug
             //System.out.println("enterRule "+grammarFileName+":"+ruleName);
             ruleLevel++;
             stats.numRuleInvocations++;
-            uniqueRules.Add(grammarFileName + ":" + ruleName);
+            uniqueRules.Add(grammarFileName + ":" + ruleName, true);
             stats.maxRuleInvocationDepth = Math.Max(stats.maxRuleInvocationDepth, ruleLevel);
             currentGrammarFileName.Push(grammarFileName);
             currentRuleName.Push(ruleName);
@@ -543,25 +544,25 @@ namespace Antlr.Runtime.Debug
             StringBuilder buf = new StringBuilder();
             buf.Append("ANTLR Runtime Report; Profile Version ");
             buf.Append(stats.Version);
-            buf.AppendLine();
+            buf.Append(NewLine);
             buf.Append("parser name ");
             buf.Append(stats.name);
-            buf.AppendLine();
+            buf.Append(NewLine);
             buf.Append("Number of rule invocations ");
             buf.Append(stats.numRuleInvocations);
-            buf.AppendLine();
+            buf.Append(NewLine);
             buf.Append("Number of unique rules visited ");
             buf.Append(stats.numUniqueRulesInvoked);
-            buf.AppendLine();
+            buf.Append(NewLine);
             buf.Append("Number of decision events ");
             buf.Append(stats.numDecisionEvents);
-            buf.AppendLine();
+            buf.Append(NewLine);
             buf.Append("Number of rule invocations while backtracking ");
             buf.Append(stats.numGuessingRuleInvocations);
-            buf.AppendLine();
+            buf.Append(NewLine);
             buf.Append("max rule invocation nesting depth ");
             buf.Append(stats.maxRuleInvocationDepth);
-            buf.AppendLine();
+            buf.Append(NewLine);
             //		buf.Append("number of fixed lookahead decisions ");
             //		buf.Append();
             //		buf.Append(newline);
@@ -609,31 +610,31 @@ namespace Antlr.Runtime.Debug
             //		buf.Append(newline);
             buf.Append("rule memoization cache size ");
             buf.Append(stats.numMemoizationCacheEntries);
-            buf.AppendLine();
+            buf.Append(NewLine);
             buf.Append("number of rule memoization cache hits ");
             buf.Append(stats.numMemoizationCacheHits);
-            buf.AppendLine();
+            buf.Append(NewLine);
             buf.Append("number of rule memoization cache misses ");
             buf.Append(stats.numMemoizationCacheMisses);
-            buf.AppendLine();
+            buf.Append(NewLine);
             //		buf.Append("number of evaluated semantic predicates ");
             //		buf.Append();
             //		buf.Append(newline);
             buf.Append("number of tokens ");
             buf.Append(stats.numTokens);
-            buf.AppendLine();
+            buf.Append(NewLine);
             buf.Append("number of hidden tokens ");
             buf.Append(stats.numHiddenTokens);
-            buf.AppendLine();
+            buf.Append(NewLine);
             buf.Append("number of char ");
             buf.Append(stats.numCharsMatched);
-            buf.AppendLine();
+            buf.Append(NewLine);
             buf.Append("number of hidden char ");
             buf.Append(stats.numHiddenCharsMatched);
-            buf.AppendLine();
+            buf.Append(NewLine);
             buf.Append("number of syntax errors ");
             buf.Append(stats.numReportedErrors);
-            buf.AppendLine();
+            buf.Append(NewLine);
             return buf.ToString();
         }
 
@@ -653,7 +654,7 @@ namespace Antlr.Runtime.Debug
             buf.Append("sempred");
             buf.Append(DataSeparator);
             buf.Append("canbacktrack");
-            buf.AppendLine();
+            buf.Append("\n");
             foreach (string fileName in decisions.KeySet())
             {
                 foreach (int d in decisions.KeySet(fileName))
@@ -674,7 +675,7 @@ namespace Antlr.Runtime.Debug
                     buf.Append(s.numSemPredEvals);
                     buf.Append(DataSeparator);
                     buf.Append(s.couldBacktrack ? "1" : "0");
-                    buf.AppendLine();
+                    buf.Append(NewLine);
                 }
             }
             return buf.ToString();

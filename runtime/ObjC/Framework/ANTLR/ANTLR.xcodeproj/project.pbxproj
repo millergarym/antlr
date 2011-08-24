@@ -255,6 +255,7 @@
 		1AE723E1134E8AB5001C3F35 /* ANTLRSymbolStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AE7238B134E8AB4001C3F35 /* ANTLRSymbolStack.m */; };
 		1AE723E2134E8AB5001C3F35 /* ANTLRToken+DebuggerSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AE7238C134E8AB4001C3F35 /* ANTLRToken+DebuggerSupport.m */; };
 		1AE723E3134E8AB6001C3F35 /* ANTLRTokenRewriteStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AE7238D134E8AB4001C3F35 /* ANTLRTokenRewriteStream.m */; };
+		1AE723E5134E8AB6001C3F35 /* ANTLRTreeAdaptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AE7238F134E8AB4001C3F35 /* ANTLRTreeAdaptor.m */; };
 		1AE723E6134E8AB6001C3F35 /* ANTLRTreeException.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AE72390134E8AB4001C3F35 /* ANTLRTreeException.m */; };
 		1AE723E7134E8AB6001C3F35 /* ANTLRTreeIterator.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AE72391134E8AB4001C3F35 /* ANTLRTreeIterator.m */; };
 		1AE723E8134E8AB6001C3F35 /* ANTLRTreeParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AE72392134E8AB4001C3F35 /* ANTLRTreeParser.m */; };
@@ -2353,6 +2354,7 @@
 				1AE723E1134E8AB5001C3F35 /* ANTLRSymbolStack.m in Sources */,
 				1AE723E2134E8AB5001C3F35 /* ANTLRToken+DebuggerSupport.m in Sources */,
 				1AE723E3134E8AB6001C3F35 /* ANTLRTokenRewriteStream.m in Sources */,
+				1AE723E5134E8AB6001C3F35 /* ANTLRTreeAdaptor.m in Sources */,
 				1AE723E6134E8AB6001C3F35 /* ANTLRTreeException.m in Sources */,
 				1AE723E7134E8AB6001C3F35 /* ANTLRTreeIterator.m in Sources */,
 				1AE723E8134E8AB6001C3F35 /* ANTLRTreeParser.m in Sources */,

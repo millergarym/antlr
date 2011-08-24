@@ -50,10 +50,10 @@
 	// format is tokenIndex, type, channel, line, col, (escaped)text
 	return [NSString stringWithFormat:@"%u %d %u %u %u \"%@", 
 		[self getTokenIndex],
-		[self getType],
-		[self getChannel],
-		[self getLine],
-		[self getCharPositionInLine],
+		self.type,
+		self.channel,
+		self.line,
+		self.charPositionInLine,
 		escapedText
 		];
 }

@@ -41,7 +41,7 @@
 	NSUInteger ruleNestingLevel;
 }
 
-@property (retain, getter=getInput, setter=setInput:) id<ANTLRCharStream> input;
+@property (retain, getter=input, setter=setInput:) id<ANTLRCharStream> input;
 @property (getter=getRuleNestingLevel, setter=setRuleNestingLevel:) NSUInteger ruleNestingLevel;
 
 #pragma mark Initializer
@@ -60,7 +60,7 @@
 - (id<ANTLRToken>) nextToken;
 - (void) mTokens;		// abstract, defined in generated sources
 - (void) skip;
-- (id<ANTLRCharStream>) getInput;
+- (id<ANTLRCharStream>) input;
 - (void) setInput:(id<ANTLRCharStream>)aCharStream;
 
 - (void) emit;
@@ -73,15 +73,15 @@
 - (void) matchRangeFromChar:(unichar)fromChar to:(unichar)toChar;
 
 #pragma mark Informational
-- (NSUInteger) getLine;
-- (NSUInteger) getCharPositionInLine;
-- (NSInteger) getIndex;
-- (NSString *) getText;
+- (NSUInteger) line;
+- (NSUInteger) charPositionInLine;
+- (NSInteger) index;
+- (NSString *) text;
 - (void) setText:(NSString *) theText;
 
 // error handling
 - (void) reportError:(ANTLRRecognitionException *)e;
-- (NSString *)getErrorMessage:(ANTLRRecognitionException *)e TokenNames:(NSMutableArray *)tokenNames;
+- (NSString *)getErrorMessage:(ANTLRRecognitionException *)e TokenNames:(AMutableArray *)tokenNames;
 - (NSString *)getCharErrorDisplay:(NSInteger)c;
 - (void) recover:(ANTLRRecognitionException *)e;
 - (void)traceIn:(NSString *)ruleName Index:(NSInteger)ruleIndex;

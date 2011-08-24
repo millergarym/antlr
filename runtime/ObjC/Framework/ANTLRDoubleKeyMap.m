@@ -6,17 +6,17 @@
 {
     self = [super init];
     if ( self  != nil ) {
-        data = [NSMutableDictionary dictionaryWithCapacity:30];
+        data = [[AMutableDictionary dictionaryWithCapacity:30] retain];
     }
     return self;
 }
 
 - (id) setObject:(id)v forKey1:(id)k1 forKey2:(id)k2
 {
-    NSMutableDictionary *data2 = [data objectForKey:k1];
+    AMutableDictionary *data2 = [data objectForKey:k1];
     id prev = nil;
-    if (data2 == nil) {
-        data2 = [[NSMutableDictionary dictionaryWithCapacity:30] retain];
+    if ( data2 == nil ) {
+        data2 = [AMutableDictionary dictionaryWithCapacity:30];
         [data setObject:data2 forKey:k1];
     }
     else {
@@ -28,13 +28,13 @@
 
 - (id) objectForKey1:(id)k1 forKey2:(id)k2
 {
-    NSMutableDictionary *data2 = [data objectForKey:k1];
-    if (data2 == nil)
+    AMutableDictionary *data2 = [data objectForKey:k1];
+    if ( data2 == nil )
         return nil;
     return [data2 objectForKey:k2];
 }
 
-- (NSMutableDictionary *) objectForKey:(id)k1
+- (AMutableDictionary *) objectForKey:(id)k1
 {
     return [data objectForKey:k1];
 }
@@ -45,8 +45,8 @@
  */
 - (NSArray *) valuesForKey:(id)k1
 {
-    NSMutableDictionary * data2 = [data objectForKey:k1];
-    if (data2 == nil)
+    AMutableDictionary *data2 = [data objectForKey:k1];
+    if ( data2 == nil )
         return nil;
     return [data2 allValues];
 }
@@ -66,18 +66,18 @@
  */
 - (NSArray *) allKeys2:(id)k1
 {
-    NSMutableDictionary * data2 = [data objectForKey:k1];
-    if (data2 == nil)
+    AMutableDictionary * data2 = [data objectForKey:k1];
+    if ( data2 == nil )
         return nil;
     return [data2 allKeys];
 }
 
-- (NSMutableArray *) values
+- (AMutableArray *) values
 {
 //    ANTLRHashMap *s = [[ANTLRHashMap newANTLRHashMapWithLen:30];
-    NSMutableArray *s = [NSMutableArray arrayWithCapacity:30];
+    AMutableArray *s = [AMutableArray arrayWithCapacity:30];
     
-    for (NSMutableDictionary *k2 in [data allValues]) {
+    for (AMutableDictionary *k2 in [data allValues]) {
         
         for ( NSString *v in [k2 allValues]) {
             [s addObject:v];
@@ -88,7 +88,11 @@
     return s;
 }
 
-- (void) dealloc {
+- (void) dealloc
+{
+#ifdef DEBUG_DEALLOC
+    NSLog( @"called dealloc in ANTLRCommonToken" );
+#endif
     [data release];
     [super dealloc];
 }

@@ -36,22 +36,22 @@
 - (id<ANTLRToken>) getToken;
 - (void) setToken:(id<ANTLRToken>) theToken;
 
-- (unsigned int) getTokenType;
+- (NSUInteger) getTokenType;
 - (void) setTokenType:(unsigned int) theTokenType;
 
-- (unsigned int) getChannel;
+- (NSUInteger) channel;
 - (void) setChannel:(unsigned int) theChannel;
 
-- (unsigned int) getTokenStartLine;
+- (NSUInteger) getTokenStartLine;
 - (void) setTokenStartLine:(unsigned int) theTokenStartLine;
 
-- (unsigned int) getTokenCharPositionInLine;
+- (NSUInteger) getTokenCharPositionInLine;
 - (void) setTokenCharPositionInLine:(unsigned int) theCharPosition;
 
-- (int) getTokenStartCharIndex;
+- (NSInteger) getTokenStartCharIndex;
 - (void) setTokenStartCharIndex:(int) theTokenStartCharIndex;
 
-- (NSString *) getText;
+- (NSString *) text;
 - (void) setText:(NSString *) theText;
 
 @end

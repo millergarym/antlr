@@ -44,12 +44,12 @@ extern NSInteger debug;
 
 + (ANTLRRuleStack *)newANTLRRuleStack
 {
-    return [[[ANTLRRuleStack alloc] init] retain];
+    return [[ANTLRRuleStack alloc] init];
 }
 
 + (ANTLRRuleStack *)newANTLRRuleStack:(NSInteger)cnt
 {
-    return [[[ANTLRRuleStack alloc] initWithLen:cnt] retain];
+    return [[ANTLRRuleStack alloc] initWithLen:cnt];
 }
 
 - (id)init
@@ -68,6 +68,9 @@ extern NSInteger debug;
 
 - (void)dealloc
 {
+#ifdef DEBUG_DEALLOC
+    NSLog( @"called dealloc in ANTLRRuleStack" );
+#endif
 	[super dealloc];
 }
 
@@ -111,7 +114,7 @@ extern NSInteger debug;
         [self ensureCapacity:idx];
     }
     if ( aRule != ptrBuffer[idx] ) {
-        if (ptrBuffer[idx] != nil) [ptrBuffer[idx] release];
+        if ( ptrBuffer[idx] ) [ptrBuffer[idx] release];
         [aRule retain];
     }
     ptrBuffer[idx] = aRule;

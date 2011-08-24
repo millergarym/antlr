@@ -243,9 +243,37 @@
 	return self;
 }
 
+- (id) initWithName:(NSString *)aName reason:(NSString *)aReason userInfo:(NSDictionary *)aUserInfo
+{
+    self = [super initWithName:aName reason:aReason userInfo:aUserInfo];
+    return(self);
+}
+
 - (NSString *) description
 {
 	return [self name];
 }
 
 @end
+
+@implementation ANTLRUnsupportedOperationException
+
++ (id) newException:(NSString *)aReason
+{
+    return [[ANTLRRuntimeException alloc] initWithName:@"Unsupported Operation Exception" reason:aReason userInfo:nil];
+}
+
+- (id) initWithName:(NSString *)aName reason:(NSString *)aReason
+{
+    self=[super initWithName:aName reason:aReason userInfo:nil];
+    return self;
+}
+
+- (id) initWithName:(NSString *)aName reason:(NSString *)aReason userInfo:(NSDictionary *)userInfo
+{
+    self=[super initWithName:aName reason:aReason userInfo:userInfo];
+    return self;
+}
+
+@end
+
