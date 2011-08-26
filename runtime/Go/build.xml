@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<project name="gotest" default="generate-gotest-lex-parse" basedir=".">
+
+  <import file="project.ant.xml" />
+	
+	<property name="build.dir" location="build" />
+	<property name="classes.dir" location="${build.dir}/classes" />
+	<property name="classes.test.dir" location="${build.dir}/test/classes" />
+
+	<path id="antlr.libs.all">
+		<pathelement location="../../tool/bin"/>
+		<fileset dir="../../lib" includes="ST-4.0.4.jar" />
+		<pathelement location="../Java/bin"/>
+	</path>
+
+  <macrodef name="generate-withid-lib">
+    <attribute name="grammar-refid" />
+    <attribute name="destdir" />
+    <attribute name="libdir" />
+    <sequential>
+      <echo message="Grammar Ref: @{grammar-refid}" />
+      <antcall target="generate-target-withid-lib">
+        <param name="grammar-refid" value="@{grammar-refid}" />
+        <param name="destdir" value="@{destdir}" />
+        <param name="libdir" value="@{libdir}" />
+      </antcall>
+    </sequential>
+  </macrodef>
+	
+  <target name="generate-target-withid-lib" unless="generate.done">
+    <sequential>
+    	
+      <exec executable="bash">
+        <arg value="-c" />
+        <arg value="pwd" />
+      </exec>
+
+    	
+      <pathconvert pathsep=" " dirsep="/" property="grammars" refid="${grammar-refid}"/>
+      <echo message="Grammars: ${grammars}" />
+      <java classname="org.antlr.Tool" 
+      	failonerror="true" 
+      	classpathref="antlr.libs.all" 
+      	fork="true" 
+      	inputstring=""
+      >
+      	<!--
+        <jvmarg line="-Xmx750M"/>
+        -->
+        <arg line="-verbose" />
+      	<!--
+        <arg line="-make" />
+        -->
+        <!-- NOTE inputstring="" is need else the junit task hangs -->
+        <!-- see http://ant.apache.org/faq.html#input-makes-exec-hang -->
+        <arg line="-o ${destdir}" />
+        <arg line="-lib ${libdir}"/>
+        <arg line="${grammars}" />
+      </java>
+    </sequential>
+  </target> 
+	
+
+  <path id="gotest-lex-parse">
+    <pathelement location="antlr/test/T.g"/>
+  </path> 
+	
+  <target name="generate-gotest-lex-parse">
+    <generate-withid-lib 
+    	grammar-refid="gotest-lex-parse" 
+    	destdir="src/cmd/antlr_test"
+    	libdir="antlr/test/imports/"
+    />
+  </target>
+
+</project>

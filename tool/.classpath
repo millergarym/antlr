@@ -2,6 +2,10 @@
 <classpath>
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="src" path="src/test/java"/>
+	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry kind="src" path="src/main/antlr3"/>
+	<classpathentry kind="src" path="gen-src/main/java"/>
+	<classpathentry kind="src" path="ST-4.0.4/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk6"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="/antlr-lib/antlr-3.4-complete-no-antlrv2.jar" sourcepath="/antlr-lib/antlr-3.4-complete-no-antlrv2-src.zip"/>

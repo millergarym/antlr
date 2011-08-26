@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/antlr-tools/src/main/java/org/antlr/Tool.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.antlr.Tool"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-verbose&#13;&#10;-o src/cmd/antlr_test &#13;&#10;-lib antlr/test/imports/ &#13;&#10;antlr/test/T.g"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="antlr-tools"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:antlr-runtime-go}"/>
+</launchConfiguration>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<project name="antlr-tool" default="generate-antlr-tool" basedir=".">
+
+	<property name="build.dir" location="build" />
+	<property name="classes.dir" location="${build.dir}/classes" />
+	<property name="classes.test.dir" location="${build.dir}/test/classes" />
+
+	<path id="antlr.libs.all">
+		<pathelement location="bin"/>
+		<fileset dir="../lib" includes="*.jar" />
+	</path>
+
+  <macrodef name="generate-withid-lib">
+    <attribute name="grammar-refid" />
+    <attribute name="destdir" />
+    <attribute name="libdir" />
+    <sequential>
+      <echo message="Grammar Ref: @{grammar-refid}" />
+      <antcall target="generate-target-withid-lib">
+        <param name="grammar-refid" value="@{grammar-refid}" />
+        <param name="destdir" value="@{destdir}" />
+        <param name="libdir" value="@{libdir}" />
+      </antcall>
+    </sequential>
+  </macrodef>
+	
+  <target name="generate-target-withid-lib" unless="generate.done">
+    <sequential>
+    	
+      <exec executable="bash">
+        <arg value="-c" />
+        <arg value="pwd" />
+      </exec>
+
+    	
+      <pathconvert pathsep=" " dirsep="/" property="grammars" refid="${grammar-refid}"/>
+      <echo message="Grammars: ${grammars}" />
+      <java classname="org.antlr.Tool" 
+      	failonerror="true" 
+      	classpathref="antlr.libs.all" 
+      	fork="true" 
+      	inputstring=""
+      >
+      	<!--
+        <jvmarg line="-Xmx750M"/>
+        -->
+        <arg line="-verbose" />
+      	<!--
+        <arg line="-make" />
+        -->
+        <!-- NOTE inputstring="" is need else the junit task hangs -->
+        <!-- see http://ant.apache.org/faq.html#input-makes-exec-hang -->
+        <arg line="-o ${destdir}" />
+        <arg line="-lib ${libdir}"/>
+        <arg line="${grammars}" />
+      </java>
+    </sequential>
+  </target> 
+	
+
+  <path id="antlr-grammars">
+    <pathelement location="src/main/antlr3/org/antlr/grammar/v3/ActionAnalysis.g"/>
+    <pathelement location="src/main/antlr3/org/antlr/grammar/v3/ActionTranslator.g"/>
+    <pathelement location="src/main/antlr3/org/antlr/grammar/v3/ANTLR.g"/>
+    <pathelement location="src/main/antlr3/org/antlr/grammar/v3/ANTLRTreePrinter.g"/>
+    <pathelement location="src/main/antlr3/org/antlr/grammar/v3/ANTLRv3.g"/>
+    <pathelement location="src/main/antlr3/org/antlr/grammar/v3/ANTLRv3Tree.g"/>
+    <pathelement location="src/main/antlr3/org/antlr/grammar/v3/AssignTokenTypesWalker.g"/>
+    <pathelement location="src/main/antlr3/org/antlr/grammar/v3/CodeGenTreeWalker.g"/>
+    <pathelement location="src/main/antlr3/org/antlr/grammar/v3/DefineGrammarItemsWalker.g"/>
+    <pathelement location="src/main/antlr3/org/antlr/grammar/v3/LeftRecursiveRuleWalker.g"/>
+    <pathelement location="src/main/antlr3/org/antlr/grammar/v3/TreeToNFAConverter.g"/>
+  </path> 
+	
+  <target name="generate-antlr-tool">
+  	<mkdir dir="gen-src/main/java"/>
+    <generate-withid-lib 
+    	grammar-refid="antlr-grammars" 
+    	destdir="gen-src/main/java/org/antlr/grammar/v3"
+    	libdir="."
+    />
+  </target>
+
+</project>
