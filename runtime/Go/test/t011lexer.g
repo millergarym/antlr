@@ -1,6 +1,9 @@
 lexer grammar t011lexer;
 options {language = Go;}
-@header {package main;}
+@header {package main;
+
+import . "fmt"
+}
 
 IDENTIFIER: 
         ('a'..'z'|'A'..'Z'|'_') 
@@ -9,8 +12,8 @@ IDENTIFIER:
         |'0'..'9'
         |'_'
             { 
-              print "Underscore" 
-              print "foo"
+              Println( "Underscore" ) 
+              Println( "foo" )
             }
         )*
     ;

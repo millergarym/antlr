@@ -1,4 +1,4 @@
-// $ANTLR 3.4 antlr/test/T.g 2011-08-26 10:24:54
+// $ANTLR 3.4 C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g 2011-08-30 16:26:03
 
 package main;
 
@@ -11,13 +11,13 @@ type T struct {
 }
 
 const (
-    EOF = -1
-    ONE = 4
-    QUOTE = 5
-    STRING = 6
-    WORD = 7
-    ZERO = 8
-    ZEROZERO = 9 
+    T_EOF = -1
+    T_ONE = 4
+    T_QUOTE = 5
+    T_STRING = 6
+    T_WORD = 7
+    T_ZERO = 8
+    T_ZEROZERO = 9
 
 )
 
@@ -25,7 +25,7 @@ const (
 // delegates
 // delegators
 
-func NewT(input antlr3rt.CharStream) *T {
+func TCreate(input antlr3rt.CharStream) *T {
     lex := antlr3rt.NewLexerImpl(input)
     var self antlr3rt.Lexer = &T {
       antlr3rt.Lexer: lex,
@@ -34,17 +34,17 @@ func NewT(input antlr3rt.CharStream) *T {
     return self.(*T);
 }
 
-func GetGrammarFileName() string { 
-    return "antlr/test/T.g"
+func (slf *T) GetGrammarFileName() string { 
+    return "C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g"
 }
 // $ANTLR start "ZEROZERO"
 func (self *T) mZEROZERO() {
  
     
-		_type := ZEROZERO
+		_type := T_ZEROZERO
 		_channel := antlr3rt.DEFAULT_TOKEN_CHANNEL
-		// antlr/test/T.g:7:9: ( '00' )
-		// antlr/test/T.g:7:11: '00'
+		// C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:7:9: ( '00' )
+		// C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:7:11: '00'
 		{
 		self.MatchString("00"); 
 
@@ -61,10 +61,10 @@ func (self *T) mZEROZERO() {
 func (self *T) mZERO() {
  
     
-		_type := ZERO
+		_type := T_ZERO
 		_channel := antlr3rt.DEFAULT_TOKEN_CHANNEL
-		// antlr/test/T.g:8:5: ( '0' )
-		// antlr/test/T.g:8:7: '0'
+		// C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:8:5: ( '0' )
+		// C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:8:7: '0'
 		{
 		self.MatchChar('0') 
 
@@ -80,10 +80,10 @@ func (self *T) mZERO() {
 func (self *T) mONE() {
  
     
-		_type := ONE
+		_type := T_ONE
 		_channel := antlr3rt.DEFAULT_TOKEN_CHANNEL
-		// antlr/test/T.g:9:4: ( '1' )
-		// antlr/test/T.g:9:6: '1'
+		// C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:9:4: ( '1' )
+		// C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:9:6: '1'
 		{
 		self.MatchChar('1') 
 
@@ -99,12 +99,12 @@ func (self *T) mONE() {
 func (self *T) mWORD() {
  
     
-		_type := WORD
+		_type := T_WORD
 		_channel := antlr3rt.DEFAULT_TOKEN_CHANNEL
-		// antlr/test/T.g:10:5: ( ( 'a' .. 'z' | 'A' .. 'Z' )+ )
-		// antlr/test/T.g:10:7: ( 'a' .. 'z' | 'A' .. 'Z' )+
+		// C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:10:5: ( ( 'a' .. 'z' | 'A' .. 'Z' )+ )
+		// C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:10:7: ( 'a' .. 'z' | 'A' .. 'Z' )+
 		{
-		// antlr/test/T.g:10:7: ( 'a' .. 'z' | 'A' .. 'Z' )+
+		// C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:10:7: ( 'a' .. 'z' | 'A' .. 'Z' )+
 		cnt1 := 0
 		loop1:
 		for {
@@ -118,7 +118,7 @@ func (self *T) mWORD() {
 
 		    switch (alt1) {
 			case 1 :
-			    // antlr/test/T.g:
+			    // C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:
 			    {
 			    if ((*self.Input()).LA(1) >= 'A' && (*self.Input()).LA(1)<='Z')||((*self.Input()).LA(1) >= 'a' && (*self.Input()).LA(1)<='z') {
 			        (*self.Input()).Consume()
@@ -151,10 +151,10 @@ func (self *T) mWORD() {
 func (self *T) mQUOTE() {
  
     
-		_type := QUOTE
+		_type := T_QUOTE
 		_channel := antlr3rt.DEFAULT_TOKEN_CHANNEL
-		// antlr/test/T.g:11:6: ( '\"' )
-		// antlr/test/T.g:11:9: '\"'
+		// C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:11:6: ( '\"' )
+		// C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:11:9: '\"'
 		{
 		self.MatchChar('"') 
 
@@ -170,15 +170,15 @@ func (self *T) mQUOTE() {
 func (self *T) mSTRING() {
  
     
-		_type := STRING
+		_type := T_STRING
 		_channel := antlr3rt.DEFAULT_TOKEN_CHANNEL
-		// antlr/test/T.g:12:7: ( QUOTE (~ ( QUOTE ) )* QUOTE )
-		// antlr/test/T.g:12:9: QUOTE (~ ( QUOTE ) )* QUOTE
+		// C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:12:7: ( QUOTE (~ ( QUOTE ) )* QUOTE )
+		// C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:12:9: QUOTE (~ ( QUOTE ) )* QUOTE
 		{
 		self.mQUOTE() 
 
 
-		// antlr/test/T.g:12:15: (~ ( QUOTE ) )*
+		// C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:12:15: (~ ( QUOTE ) )*
 		loop2:
 		for {
 		    alt2 := 2
@@ -191,7 +191,7 @@ func (self *T) mSTRING() {
 
 		    switch (alt2) {
 			case 1 :
-			    // antlr/test/T.g:
+			    // C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:
 			    {
 			    if ((*self.Input()).LA(1) >= '\u0000' && (*self.Input()).LA(1)<='!')||((*self.Input()).LA(1) >= '#' && (*self.Input()).LA(1)<='\uFFFF') {
 			        (*self.Input()).Consume()
@@ -220,7 +220,7 @@ func (self *T) mSTRING() {
 // $ANTLR end "STRING"
 
 func (self *T) MTokens() {
-    // antlr/test/T.g:1:8: ( ZEROZERO | ZERO | ONE | WORD | QUOTE | STRING )
+    // C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:1:8: ( ZEROZERO | ZERO | ONE | WORD | QUOTE | STRING )
     alt3 := 6
     switch ( (*self.Input()).LA(1) ) {
     case '0':
@@ -262,7 +262,7 @@ func (self *T) MTokens() {
 
     switch (alt3) {
         case 1 :
-            // antlr/test/T.g:1:10: ZEROZERO
+            // C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:1:10: ZEROZERO
             {
             self.mZEROZERO() 
 
@@ -270,7 +270,7 @@ func (self *T) MTokens() {
             }
 
         case 2 :
-            // antlr/test/T.g:1:19: ZERO
+            // C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:1:19: ZERO
             {
             self.mZERO() 
 
@@ -278,7 +278,7 @@ func (self *T) MTokens() {
             }
 
         case 3 :
-            // antlr/test/T.g:1:24: ONE
+            // C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:1:24: ONE
             {
             self.mONE() 
 
@@ -286,7 +286,7 @@ func (self *T) MTokens() {
             }
 
         case 4 :
-            // antlr/test/T.g:1:28: WORD
+            // C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:1:28: WORD
             {
             self.mWORD() 
 
@@ -294,7 +294,7 @@ func (self *T) MTokens() {
             }
 
         case 5 :
-            // antlr/test/T.g:1:33: QUOTE
+            // C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:1:33: QUOTE
             {
             self.mQUOTE() 
 
@@ -302,7 +302,7 @@ func (self *T) MTokens() {
             }
 
         case 6 :
-            // antlr/test/T.g:1:39: STRING
+            // C:/dev/antlr.github/antlr/runtime/Go/antlr/test/T.g:1:39: STRING
             {
             self.mSTRING() 
 

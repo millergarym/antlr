@@ -116,7 +116,7 @@ const (
      {g|public <g.recognizerName> <g:delegateName()>;}; separator="\n">
 <last(grammar.delegators):{g|public <g.recognizerName> gParent;}>
 
-func New<grammar.recognizerName>(input antlr3rt.CharStream<grammar.delegators:{g|, <g.recognizerName> <g:delegateName()>}>) *<grammar.recognizerName> {
+func <grammar.recognizerName>Create(input antlr3rt.CharStream<grammar.delegators:{g|, <g.recognizerName> <g:delegateName()>}>) *<grammar.recognizerName> {
     lex := antlr3rt.NewLexerImpl(input)
     var self antlr3rt.Lexer = &<grammar.recognizerName> {
       antlr3rt.Lexer: lex,
@@ -916,7 +916,7 @@ LA<decisionNumber>_<stateNumber> := (*self.Input()).LA(<k>)<\n>
  */
 dfaOptionalBlockState(k,edges,eotPredictsAlt,description,stateNumber,semPredState) ::= <<
 LA<decisionNumber>_<stateNumber> := (*self.Input()).LA(<k>)<\n>
-<edges; separator="\nelse ">
+<edges; separator=" else ">
 >>
 
 /** A DFA state that is actually the loopback decision of a closure
@@ -927,7 +927,7 @@ LA<decisionNumber>_<stateNumber> := (*self.Input()).LA(<k>)<\n>
  */
 dfaLoopbackState(k,edges,eotPredictsAlt,description,stateNumber,semPredState) ::= <<
 LA<decisionNumber>_<stateNumber> := (*self.Input()).LA(<k>)<\n>
-<edges; separator="\nelse "><\n>
+<edges; separator=" else "><\n>
 <if(eotPredictsAlt)>
 <if(!edges)>
 alt<decisionNumber>=<eotPredictsAlt> <! if no edges, don't gen ELSE !>
@@ -1104,7 +1104,7 @@ int index<decisionNumber>_<stateNumber> = (*self.Input()).index();
 (*self.Input()).rewind();<\n>
 <endif>
 s = -1;
-<edges; separator="\nelse ">
+<edges; separator=" else ">
 <if(semPredState)> <! return input cursor to state before we rewound !>
 (*self.Input()).seek(index<decisionNumber>_<stateNumber>);<\n>
 <endif>
