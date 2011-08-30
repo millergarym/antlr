@@ -101,7 +101,7 @@ type <grammar.recognizerName> struct {
 
 const (
 <!    <tokens:{<it.name> = <it.type>}; separator="\n">     !>
-    <tokens:{it | <it.name> = <it.type>}; separator="\n">
+    <tokens:{it | <grammar.recognizerName>_<it.name> = <it.type>}; separator="\n">
     
 )
 
@@ -118,7 +118,7 @@ const (
 
 func New<grammar.recognizerName>(input antlr3rt.CharStream<grammar.delegators:{g|, <g.recognizerName> <g:delegateName()>}>) *<grammar.recognizerName> {
     lex := antlr3rt.NewLexerImpl(input)
-    var self antlr3rt.Lexer = &T {
+    var self antlr3rt.Lexer = &<grammar.recognizerName> {
       antlr3rt.Lexer: lex,
     }
     lex.SetClient( &self )
@@ -133,10 +133,10 @@ func New<grammar.recognizerName>(input antlr3rt.CharStream<grammar.delegators:{g
         <grammar.delegators:
          {g|this.<g:delegateName()> = <g:delegateName()>;}; separator="\n">
         <last(grammar.delegators):{g|gParent = <g:delegateName()>;}>
-    return self.(*T);
+    return self.(*<grammar.recognizerName>);
 }
 
-func GetGrammarFileName() string { 
+func (slf *<grammar.recognizerName>) GetGrammarFileName() string { 
     return "<fileName>"
 }
 <if(filterMode)>
@@ -522,7 +522,7 @@ func (self *<grammar.recognizerName>) m<ruleName>(<ruleDescriptor.parameterScope
         <ruleDescriptor.actions.init>
         <block><\n>
 <else>
-		_type := <ruleName>
+		_type := <grammar.recognizerName>_<ruleName>
 		_channel := antlr3rt.DEFAULT_TOKEN_CHANNEL
 		<ruleMemoization(name=ruleName)>
 		<lexerRuleLabelDefs()>

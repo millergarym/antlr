@@ -17,7 +17,7 @@ const (
     STRING = 6
     WORD = 7
     ZERO = 8
-    ZEROZERO = 9
+    ZEROZERO = 9 
 
 )
 

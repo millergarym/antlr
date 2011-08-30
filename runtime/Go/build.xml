@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<project name="gotest" default="generate-gotest-lex-parse" basedir=".">
+<project name="gotest" default="generate-test-grammars" basedir=".">
 
-  <import file="project.ant.xml" />
-	
 	<property name="build.dir" location="build" />
 	<property name="classes.dir" location="${build.dir}/classes" />
 	<property name="classes.test.dir" location="${build.dir}/test/classes" />
@@ -73,4 +71,64 @@
     />
   </target>
 
+  <target name="generate-test-grammars">
+    <generate-withid-lib 
+    	grammar-refid="test-grammars" 
+    	destdir="src/cmd/antlr_test"
+    	libdir="test/imports"
+    />
+  </target>
+  <path id="test-grammars">
+  	   <pathelement location="test/t001lexer.g"/>
+  	   <pathelement location="test/t002lexer.g"/>
+  	<!--    <pathelement location="test/t003lexer.g"/> -->
+  	<!--    <pathelement location="test/t004lexer.g"/> -->
+  	<!--    <pathelement location="test/t005lexer.g"/> -->
+  	<!--    <pathelement location="test/t006lexer.g"/> -->
+  	<!--    <pathelement location="test/t007lexer.g"/> -->
+  	<!--    <pathelement location="test/t008lexer.g"/> -->
+  	<!--    <pathelement location="test/t009lexer.g"/> -->
+  	<!--    <pathelement location="test/t010lexer.g"/> -->
+  	<!--    <pathelement location="test/t011lexer.g"/> -->
+  	<!--    <pathelement location="test/t012lexerXMLLexer.g"/> -->
+  	<!--    <pathelement location="test/t013parser.g"/> -->
+  	<!--    <pathelement location="test/t014parser.g"/> -->
+  	<!--    <pathelement location="test/t015calc.g"/> -->
+  	<!--    <pathelement location="test/t016actions.g"/> -->
+  	<!--    <pathelement location="test/t017parser.g"/> -->
+  	<!--    <pathelement location="test/t018llstar.g"/> -->
+  	<!--    <pathelement location="test/t019lexer.g"/> -->
+  	<!--    <pathelement location="test/t020fuzzyLexer.g"/> -->
+  	<!--    <pathelement location="test/t021hoist.g"/> -->
+  	<!--    <pathelement location="test/t022scopes.g"/> -->
+  	<!--    <pathelement location="test/t023scopes.g"/> -->
+  	<!--    <pathelement location="test/t024finally.g"/> -->
+  	<!--    <pathelement location="test/t025lexerRulePropertyRef.g"/> -->
+  	<!--    <pathelement location="test/t026actions.g"/> -->
+  	<!--    <pathelement location="test/t027eof.g"/> -->
+  	<!--    <pathelement location="test/t029synpredgate.g"/> -->
+  	<!--    <pathelement location="test/t030specialStates.g"/> -->
+  	<!--    <pathelement location="test/t031emptyAlt.g"/> -->
+  	<!--    <pathelement location="test/t032subrulePredict.g"/> -->
+  	<!--    <pathelement location="test/t033backtracking.g"/> -->
+  	<!--    <pathelement location="test/t034tokenLabelPropertyRef.g"/> -->
+  	<!--    <pathelement location="test/t035ruleLabelPropertyRef.g"/> -->
+  	<!--    <pathelement location="test/t036multipleReturnValues.g"/> -->
+  	<!--    <pathelement location="test/t037rulePropertyRef.g"/> -->
+  	<!--    <pathelement location="test/t038lexerRuleLabel.g"/> -->
+  	<!--    <pathelement location="test/t039labels.g"/> -->
+  	<!--    <pathelement location="test/t040bug80.g"/> -->
+  	<!--    <pathelement location="test/t041parameters.g"/> -->
+  	<!--    <pathelement location="test/t042ast.g"/> -->
+  	<!--    <pathelement location="test/t043synpred.g"/> -->
+  	<!--    <pathelement location="test/t044trace.g"/> -->
+  	<!--    <pathelement location="test/t045dfabug.g"/> -->
+  	<!--    <pathelement location="test/t046rewrite.g"/> -->
+  	<!--    <pathelement location="test/t047treeparser.g"/> -->
+  	<!--    <pathelement location="test/t047treeparserWalker.g"/> -->
+  	<!--    <pathelement location="test/t048rewrite.g"/> -->
+  	<!--    <pathelement location="test/t048rewrite2.g"/> -->
+  	<!--    <pathelement location="test/t050decorate.g"/> -->  	
+  </path>
+	
 </project>

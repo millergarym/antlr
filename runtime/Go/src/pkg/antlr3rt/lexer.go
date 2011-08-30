@@ -7,11 +7,11 @@ import (
 )
 
 func trace(s string) string {
-    fmt.Println( "->", s )
+//    fmt.Println( "->", s )
     return s
 }
 func un(s string) {
-    fmt.Println( "<-", s )
+//    fmt.Println( "<-", s )
 }
 
 const (
@@ -225,6 +225,8 @@ func (self *LexerImpl) NextToken() (ret Token) {
     panic( "can't get here, return is for loop" )
     return nil
 }
+
+
 
 
 
